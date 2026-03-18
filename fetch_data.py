@@ -24,29 +24,36 @@ TIMEOUT = 8
 
 # --- Step 0: Get all A-share stock codes ---
 def get_all_codes():
-    """Get all A-share codes, categorized by board"""
+    """Get all A-share codes, categorized by board.
+    Uses broad prefix matching to be future-proof for new code ranges.
+    """
     codes = helpers.get_stock_codes()
     result = []
     for c in codes:
-        prefix = helpers.get_stock_type(c)
-        # Filter: main board (60xxxx sh, 000xxx/001xxx sz), GEM (300xxx/301xxx sz),
-        # STAR (688xxx sh), BSE (43/83/87 bj)
-        if c.startswith('688'):
-            result.append(('sh', c, '科创板'))
-        elif c.startswith('6') and not c.startswith('689'):
-            result.append(('sh', c, '主板'))
-        elif c.startswith(('000', '001', '003')):
+        if not c.isdigit() or len(c) != 6:
+            continue  # Skip index codes (sh000xxx, zzxxxx, etc.)
+        if c.startswith('6'):
+            # 上交所: 68xxxx=科创板, 其余=主板
+            board = '科创板' if c.startswith('68') else '主板'
+            result.append(('sh', c, board))
+        elif c.startswith(('0', '1')):
+            # 深交所主板: 000/001/002/003... 及未来可能的1开头
             result.append(('sz', c, '主板'))
-        elif c.startswith(('300', '301')):
+        elif c.startswith('3'):
+            # 深交所创业板: 300/301/302...
             result.append(('sz', c, '创业板'))
-        elif c.startswith(('43', '83', '87', '92')):
-            result.append(('bj', c, '北交所'))
-        # Skip: B shares (200xxx, 900xxx), funds, bonds, etc.
+        elif c.startswith(('4', '8', '9')):
+            # 北交所: 腾讯接口不支持大部分北交所股票的K线数据，跳过
+            continue
+        else:
+            print(f"  [WARN] 未识别的股票代码: {c}")
     return result
 
 # --- Step 1: Fetch monthly kline to get historical high ---
 def fetch_monthly_kline(prefix, code, retries=2):
-    """Fetch monthly kline for a stock, return (code, all_time_high, high_date, all_time_low, low_date, ipo_date, first_month_open)"""
+    """Fetch monthly kline for a stock.
+    Returns dict with both full ATH and ATH excluding current month.
+    """
     symbol = f'{prefix}{code}'
     url = f'https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param={symbol},month,,,800,qfq'
     for attempt in range(retries):
@@ -58,17 +65,18 @@ def fetch_monthly_kline(prefix, code, retries=2):
             if not klines or len(klines) < 2:
                 return None
 
+            ipo_date = klines[0][0]
+            first_open = float(klines[0][1])
+
+            # Scan all bars for full ATH and low
             all_time_high = -999999
             high_date = ''
             all_time_low = 999999
             low_date = ''
-            ipo_date = klines[0][0]
-            first_open = float(klines[0][1])
-
             for k in klines:
                 try:
-                    h = float(k[3])  # high
-                    l = float(k[4])  # low
+                    h = float(k[3])
+                    l = float(k[4])
                     if h > all_time_high:
                         all_time_high = h
                         high_date = k[0]
@@ -78,11 +86,25 @@ def fetch_monthly_kline(prefix, code, retries=2):
                 except (ValueError, IndexError):
                     continue
 
+            # Scan excluding current month (last bar) for pre-month ATH
+            ath_excl_current = -999999
+            ath_excl_date = ''
+            for k in klines[:-1]:
+                try:
+                    h = float(k[3])
+                    if h > ath_excl_current:
+                        ath_excl_current = h
+                        ath_excl_date = k[0]
+                except (ValueError, IndexError):
+                    continue
+
             return {
                 'code': code,
                 'prefix': prefix,
                 'all_time_high': all_time_high,
                 'high_date': high_date,
+                'ath_excl_current_month': ath_excl_current,
+                'ath_excl_current_month_date': ath_excl_date,
                 'all_time_low': all_time_low,
                 'low_date': low_date,
                 'ipo_date': ipo_date,
@@ -168,11 +190,16 @@ def fetch_daily_kline(prefix, code, days=60):
 
 # --- Step 4: Find new-high stocks and calculate metrics ---
 def find_new_high_stocks(historical, realtime, stock_list):
-    """Find stocks that hit all-time high today"""
-    new_highs = []
+    """Find stocks that hit all-time high today.
+    Two-pass approach:
+      Pass 1: Use cached ATH for quick filtering (candidates)
+      Pass 2: Re-fetch monthly klines for candidates to verify & update cache
+    """
     board_map = {c: b for _, c, b in stock_list}
     prefix_map = {c: p for p, c, _ in stock_list}
 
+    # --- Pass 1: Quick filter using cached ATH ---
+    candidates = []
     for code, rt in realtime.items():
         if code not in historical:
             continue
@@ -194,16 +221,104 @@ def find_new_high_stocks(historical, realtime, stock_list):
 
         prev_ath = hist.get('all_time_high', 0)
 
-        # Check if today's high >= previous all-time high
-        if today_high >= prev_ath:  # strict comparison
+        # Use cached ATH as initial filter
+        if today_high >= prev_ath:
+            candidates.append((code, rt, hist))
+
+    if not candidates:
+        return []
+
+    # --- Pass 2: Re-fetch monthly + daily klines to verify ---
+    # Monthly kline (exclude current month) + Daily kline (exclude today) = true ATH before today
+    print(f"  Pass 1: {len(candidates)} candidates from cache, verifying with fresh klines...")
+
+    # Load cache for updating
+    cached = {}
+    if os.path.exists(CACHE_FILE):
+        with open(CACHE_FILE, 'r') as f:
+            cached = json.load(f)
+
+    from datetime import date
+    today_str = date.today().strftime('%Y-%m-%d')
+
+    def verify_stock(item):
+        code, rt, hist = item
+        prefix = prefix_map.get(code, hist.get('prefix', 'sz'))
+
+        # 1) Monthly kline (one request, returns both full ATH and excl-current-month ATH)
+        fresh = fetch_monthly_kline(prefix, code)
+
+        # 2) Daily kline for recent 30 days → fill current month gap (exclude today)
+        daily_ath = 0
+        daily_ath_date = ''
+        daily_klines = fetch_daily_kline(prefix, code, days=30)
+        if daily_klines:
+            for k in daily_klines:
+                try:
+                    if k[0] >= today_str:
+                        continue  # skip today
+                    h = float(k[3])
+                    if h > daily_ath:
+                        daily_ath = h
+                        daily_ath_date = k[0]
+                except (ValueError, IndexError):
+                    continue
+
+        return code, rt, hist, fresh, daily_ath, daily_ath_date
+
+    verified_results = {}
+    with ThreadPoolExecutor(max_workers=20) as executor:
+        futures = [executor.submit(verify_stock, c) for c in candidates]
+        for f in as_completed(futures):
+            try:
+                code, rt, hist, fresh, daily_ath, daily_ath_date = f.result()
+                verified_results[code] = (rt, hist, fresh, daily_ath, daily_ath_date)
+            except:
+                pass
+
+    new_highs = []
+    cache_updated = False
+    for code, (rt, hist, fresh, daily_ath, daily_ath_date) in verified_results.items():
+        if fresh:
+            monthly_ath = fresh['ath_excl_current_month']
+            monthly_ath_date = fresh['ath_excl_current_month_date']
+            all_time_low = fresh['all_time_low']
+            low_date = fresh['low_date']
+            ipo_date = fresh['ipo_date']
+            first_open = fresh['first_open']
+            # Update cache with full data (including current month)
+            fresh['board'] = board_map.get(code, hist.get('board', ''))
+            cached[code] = fresh
+            cache_updated = True
+        else:
+            monthly_ath = hist.get('all_time_high', 0)
+            monthly_ath_date = hist.get('high_date', '')
+            all_time_low = hist.get('all_time_low', 0)
+            low_date = hist.get('low_date', '')
+            ipo_date = hist.get('ipo_date', '')
+            first_open = hist.get('first_open', 0)
+
+        # True ATH before today = max(monthly ATH excluding current month, daily ATH excluding today)
+        if daily_ath > monthly_ath:
+            true_ath = daily_ath
+            ath_date = daily_ath_date
+        else:
+            true_ath = monthly_ath
+            ath_date = monthly_ath_date
+
+        today_high = rt.get('high', 0)
+
+        # Verify against true pre-today ATH
+        if today_high >= true_ath:
+            name = rt.get('name', '')
             new_highs.append({
                 'code': code,
                 'prefix': prefix_map.get(code, 'sz'),
                 'name': name,
                 'board': board_map.get(code, ''),
                 'today_high': today_high,
-                'prev_ath': prev_ath,
-                'prev_ath_date': hist.get('high_date', ''),
+                'prev_ath': true_ath,
+                'prev_ath_date': ath_date,
                 'now_price': rt.get('now', 0),
                 'close_yesterday': rt.get('close', 0),
                 'open': rt.get('open', 0),
@@ -215,13 +330,23 @@ def find_new_high_stocks(historical, realtime, stock_list):
                 'market_cap': rt.get('总市值', 0),
                 'float_cap': rt.get('流通市值', 0),
                 'amplitude': rt.get('振幅', 0),
-                'all_time_low': hist.get('all_time_low', 0),
-                'low_date': hist.get('low_date', ''),
-                'ipo_date': hist.get('ipo_date', ''),
-                'first_open': hist.get('first_open', 0),
+                'all_time_low': all_time_low,
+                'low_date': low_date,
+                'ipo_date': ipo_date,
+                'first_open': first_open,
                 'change_pct': rt.get('涨跌(%)', 0),
             })
+        else:
+            print(f"  [FILTERED] {code} {rt.get('name','')} - cached ATH={hist.get('all_time_high',0):.2f}, "
+                  f"fresh ATH={true_ath:.2f}, today_high={today_high:.2f}")
 
+    # Save updated cache
+    if cache_updated:
+        with open(CACHE_FILE, 'w') as f:
+            json.dump(cached, f, ensure_ascii=False)
+        print(f"  Cache updated ({len(cached)} stocks)")
+
+    print(f"  Pass 2: {len(new_highs)} verified new-high stocks")
     return new_highs
 
 def calculate_metrics(new_highs):
