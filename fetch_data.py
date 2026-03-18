@@ -674,6 +674,96 @@ def fetch_924_prices(new_highs):
 
     return prices_924
 
+# --- Step 6: Fetch industry & concept from Eastmoney ---
+# Non-meaningful board tags to filter out
+BOARD_BLACKLIST = {
+    '融资融券', '深股通', '沪股通', '富时罗素', '标准普尔', 'MSCI中国',
+    '最近多板', '东方财富热股', '昨日高振幅', '昨日涨停', '昨日连板',
+    '昨日触板', '今日热门', 'HS300_', '上证180_', '上证50_', '科创50',
+    '沪深300', '中证500', '中证1000', '转债标的', '股权激励',
+    '高送转', '次新股', '创业板综', '深成500', '深证100R',
+    '预盈预增', '预亏预减', '送转填权', '资产重组', '定增破发',
+}
+# Substrings to filter out from concept tags
+CONCEPT_BLACKLIST_KEYWORDS = ['板块', '指数', '成份', '上证', '深证', '中证',
+                               'MSCI', '标普', '富时', '央国企改革', '沪深']
+
+def fetch_stock_concepts(code):
+    """Fetch industry & concept tags from Eastmoney for a single stock code."""
+    url = (
+        'https://datacenter.eastmoney.com/securities/api/data/v1/get'
+        '?reportName=RPT_F10_CORETHEME_BOARDTYPE'
+        '&columns=SECURITY_CODE,BOARD_NAME,BOARD_TYPE'
+        f'&filter=(SECURITY_CODE=%22{code}%22)'
+    )
+    try:
+        r = requests.get(url, timeout=TIMEOUT)
+        data = r.json()
+        if not data.get('success') or not data.get('result', {}).get('data'):
+            return None, None
+
+        industries = []
+        concepts = []
+        for item in data['result']['data']:
+            name = item.get('BOARD_NAME', '')
+            btype = item.get('BOARD_TYPE', '')
+            if not name:
+                continue
+            # Skip blacklisted tags
+            if name in BOARD_BLACKLIST:
+                continue
+            # Skip tags that look like index/region boards
+            if btype == '板块':
+                continue
+            if btype == '行业':
+                industries.append(name)
+            else:
+                # Concept tag - additional filtering
+                if any(kw in name for kw in CONCEPT_BLACKLIST_KEYWORDS):
+                    continue
+                concepts.append(name)
+
+        # Take top industry (most specific: last one is usually broadest, first is specific)
+        industry = industries[0] if industries else ''
+        # Take top 3-5 concept tags
+        concept_str = '/'.join(concepts[:5]) if concepts else ''
+        return industry, concept_str
+    except Exception as e:
+        return None, None
+
+
+def fetch_all_concepts(new_highs):
+    """Fetch industry & concept for all new-high stocks from Eastmoney."""
+    print(f"Fetching industry/concept from Eastmoney for {len(new_highs)} stocks...")
+
+    def fetch_one(stock):
+        industry, concept = fetch_stock_concepts(stock['code'])
+        return stock['code'], industry, concept
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = [executor.submit(fetch_one, s) for s in new_highs]
+        results = {}
+        for f in as_completed(futures):
+            try:
+                code, industry, concept = f.result()
+                results[code] = (industry, concept)
+            except:
+                pass
+
+    updated = 0
+    for s in new_highs:
+        if s['code'] in results:
+            ind, con = results[s['code']]
+            if ind is not None:
+                s['industry'] = ind
+                updated += 1
+            if con is not None:
+                s['concept'] = con
+
+    print(f"  Updated industry/concept for {updated}/{len(new_highs)} stocks")
+    return new_highs
+
+
 # --- Main ---
 def main():
     print("=" * 60)
@@ -716,6 +806,9 @@ def main():
 
     # Step 6: Extra metrics (ATH streaks, MA breaks, days since prev ATH)
     new_highs = add_extra_metrics(new_highs)
+
+    # Step 7: Fetch industry & concept from Eastmoney
+    new_highs = fetch_all_concepts(new_highs)
 
     # Sort by strength score
     new_highs.sort(key=lambda x: x.get('strength_score', 0), reverse=True)
