@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+historical_highs.json
+.claude/
+data_js.txt
+*.tmp
