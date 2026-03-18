@@ -32,6 +32,15 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      # 用 Actions cache 持久化历史新高缓存文件，避免每次全量拉取
+      - name: Restore ATH cache
+        uses: actions/cache@v4
+        with:
+          path: historical_highs.json
+          key: ath-cache-${{ github.run_number }}
+          restore-keys: |
+            ath-cache-
+
       - name: Run ATH scanner
         run: python fetch_data.py
         timeout-minutes: 30
@@ -43,7 +52,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add new_high_stocks.json historical_highs.json index.html
+          git add new_high_stocks.json index.html
           # Only commit if there are changes
           git diff --staged --quiet || git commit -m "data: $(date +%Y-%m-%d) ATH scan results"
           git push
