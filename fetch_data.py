@@ -777,6 +777,104 @@ def fetch_all_concepts(new_highs):
     return new_highs
 
 
+def fetch_free_float_turnover(new_highs):
+    """Fetch actual turnover rate based on free-float shares from Eastmoney.
+    For each stock:
+      1. Get total circulating A-shares from RPT_F10_EH_EQUITY
+      2. Get top shareholders with >5% holding from RPT_F10_EH_FREEHOLDERS
+      3. actual_free_float = circulating_shares - major_holder_shares
+      4. actual_turnover = volume / actual_free_float * 100
+    Falls back to easyquotation turnover if Eastmoney data is unavailable.
+    """
+    print(f"Fetching actual turnover (free-float) for {len(new_highs)} stocks...")
+
+    def fetch_one(stock):
+        code = stock['code']
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+
+        # 1. Get total circulating A-shares
+        equity_url = (
+            'https://datacenter.eastmoney.com/securities/api/data/v1/get'
+            '?reportName=RPT_F10_EH_EQUITY'
+            '&columns=SECURITY_CODE,LISTED_A_SHARES,TOTAL_SHARES,FREE_SHARES'
+            f'&filter=(SECURITY_CODE=%22{code}%22)'
+            '&pageSize=1&sortColumns=END_DATE&sortTypes=-1'
+            '&source=HSF10&client=PC'
+        )
+        try:
+            r = requests.get(equity_url, timeout=TIMEOUT, headers=headers)
+            eq_data = r.json()
+            if not eq_data.get('success') or not eq_data.get('result', {}).get('data'):
+                return code, None
+            eq_item = eq_data['result']['data'][0]
+            circulating = eq_item.get('LISTED_A_SHARES') or eq_item.get('TOTAL_SHARES') or 0
+        except Exception:
+            return code, None
+
+        if not circulating or circulating <= 0:
+            return code, None
+
+        # 2. Get top shareholders with >5% holding
+        holder_url = (
+            'https://datacenter.eastmoney.com/securities/api/data/v1/get'
+            '?reportName=RPT_F10_EH_FREEHOLDERS'
+            '&columns=SECURITY_CODE,HOLD_NUM,FREE_HOLDNUM_RATIO,HOLDER_RANK'
+            f'&filter=(SECURITY_CODE=%22{code}%22)(IS_MAX_REPORTDATE=%221%22)'
+            '&pageSize=20&sortColumns=HOLDER_RANK&sortTypes=1'
+            '&source=HSF10&client=PC'
+        )
+        major_shares = 0
+        try:
+            r = requests.get(holder_url, timeout=TIMEOUT, headers=headers)
+            h_data = r.json()
+            if h_data.get('success') and h_data.get('result', {}).get('data'):
+                for holder in h_data['result']['data']:
+                    ratio = holder.get('FREE_HOLDNUM_RATIO', 0) or 0
+                    hold_num = holder.get('HOLD_NUM', 0) or 0
+                    # Only subtract holders with >5% of free float
+                    if ratio > 5:
+                        major_shares += hold_num
+        except Exception:
+            pass
+
+        # 3. Calculate actual free float and turnover
+        actual_free_float = circulating - major_shares
+        if actual_free_float <= 0:
+            actual_free_float = circulating  # fallback to total circulating
+
+        # Get volume in shares (from sina-style data or back-calculate)
+        # easyquotation tencent 'volume' field is unreliable, use market_cap / price for shares
+        # Volume: turnover_pct / 100 * circulating (reverse from existing turnover)
+        existing_turnover = stock.get('turnover', 0)
+        if existing_turnover > 0 and circulating > 0:
+            volume_shares = existing_turnover / 100 * circulating
+        else:
+            return code, None
+
+        actual_turnover = round(volume_shares / actual_free_float * 100, 2)
+        return code, actual_turnover
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = [executor.submit(fetch_one, s) for s in new_highs]
+        results = {}
+        for f in as_completed(futures):
+            try:
+                code, turnover = f.result()
+                if turnover is not None:
+                    results[code] = turnover
+            except:
+                pass
+
+    updated = 0
+    for s in new_highs:
+        if s['code'] in results:
+            s['turnover'] = results[s['code']]
+            updated += 1
+
+    print(f"  Updated actual turnover for {updated}/{len(new_highs)} stocks")
+    return new_highs
+
+
 def fetch_concept_board_rankings():
     """Fetch today's concept board rankings from Eastmoney push2 API.
     Returns dict: {board_name: {'rank': int, 'change_pct': float}} or empty dict if unavailable.
@@ -918,7 +1016,10 @@ def main():
     # Step 7: Fetch industry & concept from Eastmoney
     new_highs = fetch_all_concepts(new_highs)
 
-    # Step 8: Assign driving concept (today's most relevant theme per stock)
+    # Step 8: Fetch actual turnover (free-float based) from Eastmoney
+    new_highs = fetch_free_float_turnover(new_highs)
+
+    # Step 9: Assign driving concept (today's most relevant theme per stock)
     new_highs = assign_driving_concept(new_highs)
 
     # Sort by strength score
