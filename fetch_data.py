@@ -17,8 +17,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from easyquotation import helpers
 
 # --- Config ---
-CACHE_FILE = '/workspace/historical_highs.json'
-RESULT_FILE = '/workspace/new_high_stocks.json'
+_DIR = os.path.dirname(os.path.abspath(__file__))
+CACHE_FILE = os.path.join(_DIR, 'historical_highs.json')
+RESULT_FILE = os.path.join(_DIR, 'new_high_stocks.json')
 MAX_WORKERS = 30
 TIMEOUT = 8
 
