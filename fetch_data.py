@@ -432,22 +432,22 @@ def calculate_metrics(new_highs):
             stock['gain_from_low'] = 0
 
         # 7. Gain since 2024-09-24 bull market
-        # Find the close on or near 2024-09-24
-        bull_start_close = None
-        for i, d in enumerate(dates):
-            if d >= '2024-09-24':
-                bull_start_close = closes[i]
-                break
-        # If not found in 120 days, try to find from the earliest available
-        if bull_start_close is None and len(closes) > 0:
-            bull_start_close = closes[0]  # Use earliest available
-            stock['bull_start_note'] = f'earliest: {dates[0]}'
+        # Only calculate if not already set by fetch_924_prices() (which is more accurate)
+        if 'gain_since_924' not in stock or 'price_at_924' not in stock:
+            bull_start_close = None
+            for i, d in enumerate(dates):
+                if d >= '2024-09-24':
+                    bull_start_close = closes[i]
+                    break
+            if bull_start_close is None and len(closes) > 0:
+                bull_start_close = closes[0]
+                stock['bull_start_note'] = f'earliest: {dates[0]}'
 
-        if bull_start_close and bull_start_close > 0:
-            stock['gain_since_924'] = round((current_close - bull_start_close) / bull_start_close * 100, 2)
-            stock['price_at_924'] = bull_start_close
-        else:
-            stock['gain_since_924'] = 0
+            if bull_start_close and bull_start_close > 0:
+                stock['gain_since_924'] = round((current_close - bull_start_close) / bull_start_close * 100, 2)
+                stock['price_at_924'] = bull_start_close
+            else:
+                stock['gain_since_924'] = 0
 
         # 8. Real turnover rate (use realtime data)
         # Already have stock['turnover']
@@ -653,10 +653,10 @@ def fetch_924_prices(new_highs):
             stock_data = data.get('data', {}).get(symbol, {})
             klines = stock_data.get('qfqday') or stock_data.get('day')
             if klines:
-                # Find closest to 2024-09-24
+                # Find closest to 2024-09-24, use close price as reference
                 for k in klines:
                     if k[0] >= '2024-09-24':
-                        return stock['code'], float(k[1])  # open on that day
+                        return stock['code'], float(k[2])  # close on that day
                 return stock['code'], float(klines[0][2])  # first available close
         except:
             pass
