@@ -28,6 +28,7 @@ def get_all_codes():
     """Get all A-share codes, categorized by board.
     Uses broad prefix matching to be future-proof for new code ranges.
     """
+    helpers.update_stock_codes()
     codes = helpers.get_stock_codes()
     result = []
     for c in codes:
