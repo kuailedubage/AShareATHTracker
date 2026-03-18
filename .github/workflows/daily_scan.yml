@@ -1,0 +1,49 @@
+name: Daily A-Share ATH Scan
+
+on:
+  # 每个交易日收盘后运行 (15:30 CST = 07:30 UTC)
+  schedule:
+    - cron: '30 7 * * 1-5'  # 周一到周五
+  # 支持手动触发
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: daily-scan
+  cancel-in-progress: true
+
+jobs:
+  scan-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run ATH scanner
+        run: python fetch_data.py
+        timeout-minutes: 30
+
+      - name: Generate report
+        run: python generate_report.py
+
+      - name: Commit results
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add new_high_stocks.json historical_highs.json index.html
+          # Only commit if there are changes
+          git diff --staged --quiet || git commit -m "data: $(date +%Y-%m-%d) ATH scan results"
+          git push
