@@ -765,6 +765,101 @@ def fetch_all_concepts(new_highs):
     return new_highs
 
 
+def fetch_concept_board_rankings():
+    """Fetch today's concept board rankings from Eastmoney push2 API.
+    Returns dict: {board_name: {'rank': int, 'change_pct': float}} or empty dict if unavailable.
+    """
+    url = ('https://push2.eastmoney.com/api/qt/clist/get'
+           '?pn=1&pz=500&fid=f3&fs=m:90+t:3'
+           '&fields=f2,f3,f12,f14')
+    try:
+        r = requests.get(url, timeout=10,
+                         headers={'Referer': 'https://data.eastmoney.com/',
+                                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+        data = r.json()
+        items = data.get('data', {}).get('diff', [])
+        if isinstance(items, dict):
+            items = list(items.values())
+        if not items:
+            return {}
+        # Sort by change_pct descending
+        items.sort(key=lambda x: x.get('f3', 0) or 0, reverse=True)
+        result = {}
+        for rank, it in enumerate(items, 1):
+            name = it.get('f14', '')
+            pct = it.get('f3', 0) or 0
+            if name:
+                result[name] = {'rank': rank, 'change_pct': pct / 1 if isinstance(pct, float) else pct}
+        print(f"  Loaded {len(result)} concept board rankings (top: {items[0].get('f14','')} {items[0].get('f3',0)}%)")
+        return result
+    except Exception as e:
+        print(f"  [WARN] Failed to fetch concept board rankings: {e}")
+        return {}
+
+
+def assign_driving_concept(new_highs):
+    """For each stock, determine the most relevant 'driving concept' today.
+    Strategy:
+      1. Try push2 API: match stock's concepts against today's board rankings, pick highest-ranked
+      2. Fallback: among new-high stocks' concepts, pick the one with most peers (= likely hot theme)
+    Adds 'driving_concept' and 'driving_concept_rank' to each stock.
+    """
+    print("Determining driving concept for each stock...")
+
+    # Method 1: concept board rankings from Eastmoney
+    board_ranks = fetch_concept_board_rankings()
+
+    # Method 2 (fallback): count concept frequency among new-high stocks
+    concept_peer_count = {}
+    concept_peer_gain = {}
+    for s in new_highs:
+        for tag in (s.get('concept', '') or '').split('/'):
+            tag = tag.strip()
+            if not tag:
+                continue
+            concept_peer_count[tag] = concept_peer_count.get(tag, 0) + 1
+            concept_peer_gain.setdefault(tag, []).append(s.get('change_pct', 0))
+
+    for s in new_highs:
+        tags = [t.strip() for t in (s.get('concept', '') or '').split('/') if t.strip()]
+        if not tags:
+            s['driving_concept'] = s.get('industry', '')
+            s['driving_concept_rank'] = -1
+            continue
+
+        if board_ranks:
+            # Match against board rankings: find the concept with best (lowest) rank number
+            matched = [(t, board_ranks[t]['rank'], board_ranks[t]['change_pct'])
+                       for t in tags if t in board_ranks]
+            if matched:
+                best = min(matched, key=lambda x: x[1])
+                s['driving_concept'] = best[0]
+                s['driving_concept_rank'] = best[1]
+                continue
+            # If none matched exactly, try substring match
+            for t in tags:
+                for bname, binfo in board_ranks.items():
+                    if t in bname or bname in t:
+                        matched.append((bname, binfo['rank'], binfo['change_pct']))
+            if matched:
+                best = min(matched, key=lambda x: x[1])
+                s['driving_concept'] = best[0]
+                s['driving_concept_rank'] = best[1]
+                continue
+
+        # Fallback: pick concept with most new-high peers, tiebreak by avg gain
+        best_tag = max(tags, key=lambda t: (
+            concept_peer_count.get(t, 0),
+            sum(concept_peer_gain.get(t, [0])) / max(len(concept_peer_gain.get(t, [1])), 1)
+        ))
+        s['driving_concept'] = best_tag
+        s['driving_concept_rank'] = -1
+
+    method = 'board rankings' if board_ranks else 'peer frequency'
+    print(f"  Assigned driving concepts via {method}")
+    return new_highs
+
+
 # --- Main ---
 def main():
     print("=" * 60)
@@ -810,6 +905,9 @@ def main():
 
     # Step 7: Fetch industry & concept from Eastmoney
     new_highs = fetch_all_concepts(new_highs)
+
+    # Step 8: Assign driving concept (today's most relevant theme per stock)
+    new_highs = assign_driving_concept(new_highs)
 
     # Sort by strength score
     new_highs.sort(key=lambda x: x.get('strength_score', 0), reverse=True)
