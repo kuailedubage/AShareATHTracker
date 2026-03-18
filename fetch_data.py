@@ -384,27 +384,39 @@ def calculate_metrics(new_highs):
         pullback_pct = round((today_high - current_close) / today_high * 100, 2)
         stock['pullback_pct'] = pullback_pct
 
-        # 2. Consecutive new high days
-        consecutive_days = 0
-        running_max = 0
-        for i in range(len(highs) - 1, -1, -1):
-            if i == len(highs) - 1:
-                running_max = highs[i]
-                consecutive_days = 1
+        # 2. Consecutive new high days: from today backwards, find the longest
+        #    unbroken streak where every day's high > its preceding day's high.
+        #    A day where high < previous day's high breaks the streak, even if the
+        #    day after it resumes higher.
+        n_h = len(highs)
+        # First, mark each day: is this day's high > yesterday's high?
+        # Then count backwards from end while all marks are True.
+        consecutive_days = 1  # today always counts
+        for i in range(n_h - 1, 0, -1):
+            # Check: did day i have high > day i-1?
+            if highs[i] > highs[i - 1]:
+                # Also check: did day i-1 have high > day i-2? (if i-2 exists)
+                # We need the streak to be unbroken, so day i-1 must also be part of it
+                consecutive_days += 1
             else:
-                if highs[i] >= running_max * 0.998:
-                    # This day also set a new high at that point
-                    pass
-                else:
-                    break
-                consecutive_days += 1
-                running_max = highs[i]
-
-        # Recalculate: count backwards how many days the high kept increasing
+                # Day i's high dropped vs day i-1, streak ends here
+                break
+        # But the above still has the same issue: it counts day i-1 in the streak
+        # even if day i-1's high < day i-2's high.
+        # Correct approach: walk backwards, each day in the streak must have
+        # high > the day before it.
         consecutive_days = 1
-        for i in range(len(highs) - 2, -1, -1):
-            if highs[i + 1] > highs[i]:
-                consecutive_days += 1
+        i = n_h - 1
+        while i > 0:
+            if highs[i] > highs[i - 1]:
+                # day i is higher than day i-1, but is day i-1 also higher than i-2?
+                # We include day i-1 in the streak only if it's also > i-2
+                if i - 1 == 0 or highs[i - 1] > highs[i - 2]:
+                    consecutive_days += 1
+                    i -= 1
+                else:
+                    # day i-1 was a dip (lower than i-2), streak stops at day i
+                    break
             else:
                 break
         stock['consecutive_new_high_days'] = consecutive_days
