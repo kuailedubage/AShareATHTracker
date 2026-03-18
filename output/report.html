@@ -380,6 +380,7 @@ const TABLE_COLS=[
   {key:'industry',label:'行业'},
   {key:'concept',label:'核心概念',fmt:v=>`<span style="font-size:11px;color:#aaa;max-width:180px;display:inline-block;overflow:hidden;text-overflow:ellipsis" title="${v}">${v}</span>`},
   {key:'driving_concept',label:'驱动题材',fmt:v=>v?`<span style="font-size:12px;color:${C.mag};font-weight:600">${v}</span>`:`<span style="color:#555">-</span>`},
+  {key:'recent_announcements',label:'近期公告',fmt:v=>{if(!v||!v.length)return`<span style="color:#555">-</span>`;const first=v[0].replace(/^\[\d{4}-\d{2}-\d{2}\]\s*/,'');const tip=v.join('\n');return`<span style="font-size:11px;color:#ddd;max-width:200px;display:inline-block;overflow:hidden;text-overflow:ellipsis;cursor:help" title="${tip.replace(/"/g,'&quot;')}">${first}</span>`}},
   {key:'today_high',label:'今日最高价',fmt:v=>`<span class="mono">${fmt(v)}</span>`},
   {key:'now_price',label:'收盘价',fmt:v=>`<span class="mono" style="font-weight:600">${fmt(v)}</span>`},
   {key:'change_pct',label:'涨跌%',fmt:v=>pct(v),sort:'num'},

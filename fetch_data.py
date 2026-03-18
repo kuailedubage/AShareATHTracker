@@ -875,6 +875,90 @@ def fetch_free_float_turnover(new_highs):
     return new_highs
 
 
+def fetch_stock_announcements(new_highs, days=14):
+    """Fetch recent announcements for each new-high stock from Eastmoney.
+    Returns announcements from the past `days` days, sorted by importance.
+    Adds 'recent_announcements' (list of title strings) to each stock.
+    """
+    from datetime import date, timedelta
+    end_date = date.today().strftime('%Y-%m-%d')
+    start_date = (date.today() - timedelta(days=days)).strftime('%Y-%m-%d')
+    print(f"Fetching announcements ({start_date} ~ {end_date}) for {len(new_highs)} stocks...")
+
+    # Announcement type priority for sorting (lower = more important)
+    ANN_PRIORITY_KEYWORDS = [
+        ('业绩', 1), ('利润', 1), ('营收', 1), ('盈利', 1), ('预增', 1), ('预盈', 1),
+        ('重组', 2), ('并购', 2), ('收购', 2), ('合并', 2),
+        ('回购', 3), ('增持', 3), ('减持', 3),
+        ('合同', 4), ('中标', 4), ('订单', 4),
+        ('分红', 5), ('派息', 5), ('送转', 5),
+        ('异常波动', 6), ('风险提示', 6),
+    ]
+
+    def get_priority(title):
+        for keyword, priority in ANN_PRIORITY_KEYWORDS:
+            if keyword in title:
+                return priority
+        return 99
+
+    def fetch_one(stock):
+        code = stock['code']
+        url = (
+            f'https://np-anotice-stock.eastmoney.com/api/security/ann'
+            f'?page_size=10&page_index=1&stock_list={code}'
+            f'&ann_type=A&begin_time={start_date}&end_time={end_date}'
+        )
+        try:
+            r = requests.get(url, timeout=TIMEOUT,
+                             headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+            data = r.json()
+            items = data.get('data', {}).get('list', [])
+            if not items:
+                return code, []
+
+            announcements = []
+            for item in items:
+                title = item.get('title', '')
+                ann_date = item.get('notice_date', '')[:10]
+                if title:
+                    # Remove stock name prefix if present (e.g. "佰维存储:")
+                    for sep in [':', '：']:
+                        if sep in title:
+                            title = title.split(sep, 1)[-1]
+                    announcements.append({
+                        'title': title.strip(),
+                        'date': ann_date,
+                        'priority': get_priority(title),
+                    })
+
+            # Sort by priority (most important first), then by date (newest first)
+            announcements.sort(key=lambda x: (x['priority'], x['date']))
+            # Return just title strings with date prefix
+            return code, [f"[{a['date']}] {a['title']}" for a in announcements[:5]]
+        except Exception:
+            return code, []
+
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = [executor.submit(fetch_one, s) for s in new_highs]
+        results = {}
+        for f in as_completed(futures):
+            try:
+                code, anns = f.result()
+                results[code] = anns
+            except:
+                pass
+
+    updated = 0
+    for s in new_highs:
+        anns = results.get(s['code'], [])
+        s['recent_announcements'] = anns
+        if anns:
+            updated += 1
+
+    print(f"  Found announcements for {updated}/{len(new_highs)} stocks")
+    return new_highs
+
+
 def fetch_concept_board_rankings():
     """Fetch today's concept board rankings from Eastmoney push2 API.
     Returns dict: {board_name: {'rank': int, 'change_pct': float}} or empty dict if unavailable.
@@ -1021,6 +1105,9 @@ def main():
 
     # Step 9: Assign driving concept (today's most relevant theme per stock)
     new_highs = assign_driving_concept(new_highs)
+
+    # Step 10: Fetch recent announcements (catalyst detection)
+    new_highs = fetch_stock_announcements(new_highs, days=14)
 
     # Sort by strength score
     new_highs.sort(key=lambda x: x.get('strength_score', 0), reverse=True)
