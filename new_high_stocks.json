@@ -44,8 +44,8 @@
     "broke_ma5_after_ath": false,
     "broke_ma10_after_ath": false,
     "broke_ma20_after_ath": false,
-    "industry": "新材料",
-    "concept": "碳纤维/军工新材料/国产替代"
+    "industry": "化学纤维",
+    "concept": "商业航天/氢能源/碳纤维/低空经济/飞行汽车(eVTOL)"
   },
   {
     "code": "603929",
@@ -92,8 +92,8 @@
     "broke_ma5_after_ath": false,
     "broke_ma10_after_ath": false,
     "broke_ma20_after_ath": false,
-    "industry": "建筑装饰",
-    "concept": "半导体洁净室/芯片国产化/净化工程"
+    "industry": "其他专业工程",
+    "concept": "中芯概念/半导体概念/国产芯片/华为概念/富士康"
   },
   {
     "code": "688525",
@@ -119,8 +119,8 @@
     "ipo_date": "2022-12-30",
     "first_open": 15.37,
     "change_pct": 9.46,
-    "price_at_924": 74.96,
-    "gain_since_924": 244.3,
+    "price_at_924": 80.35,
+    "gain_since_924": 221.21,
     "pullback_pct": 0.73,
     "consecutive_new_high_days": 5,
     "ma5_deviation": 12.79,
@@ -140,8 +140,8 @@
     "broke_ma5_after_ath": true,
     "broke_ma10_after_ath": false,
     "broke_ma20_after_ath": false,
-    "industry": "半导体",
-    "concept": "存储芯片/国产替代/AI算力"
+    "industry": "数字芯片设计",
+    "concept": "汽车芯片/数据中心/半导体概念/国产芯片/阿里概念"
   },
   {
     "code": "301248",
@@ -188,8 +188,8 @@
     "broke_ma5_after_ath": true,
     "broke_ma10_after_ath": true,
     "broke_ma20_after_ath": true,
-    "industry": "计算机",
-    "concept": "智慧城市/AI应用/数字化"
+    "industry": "IT服务Ⅲ",
+    "concept": "生物识别/数据中心/华为概念/人工智能/国产软件"
   },
   {
     "code": "001309",
@@ -236,8 +236,8 @@
     "broke_ma5_after_ath": false,
     "broke_ma10_after_ath": false,
     "broke_ma20_after_ath": false,
-    "industry": "半导体",
-    "concept": "存储模组/闪存/国产替代"
+    "industry": "数字芯片设计",
+    "concept": "半导体概念/国产芯片/5G概念/通信技术/小盘股"
   },
   {
     "code": "300042",
@@ -263,8 +263,8 @@
     "ipo_date": "2010-01-29",
     "first_open": 16.15,
     "change_pct": 20.0,
-    "price_at_924": 25.04,
-    "gain_since_924": 143.93,
+    "price_at_924": 26.69,
+    "gain_since_924": 128.85,
     "pullback_pct": 0.0,
     "consecutive_new_high_days": 4,
     "ma5_deviation": 30.46,
@@ -284,8 +284,8 @@
     "broke_ma5_after_ath": false,
     "broke_ma10_after_ath": false,
     "broke_ma20_after_ath": false,
-    "industry": "计算机",
-    "concept": "闪存专利/数据存储/知识产权"
+    "industry": "计算机设备",
+    "concept": "华为昇腾/数据中心/国产芯片/知识产权/大数据"
   },
   {
     "code": "002636",
@@ -332,8 +332,8 @@
     "broke_ma5_after_ath": false,
     "broke_ma10_after_ath": false,
     "broke_ma20_after_ath": false,
-    "industry": "电子",
-    "concept": "PCB/覆铜板/AI算力基础设施"
+    "industry": "元件",
+    "concept": "消毒剂/PCB/医疗器械概念"
   },
   {
     "code": "300606",
@@ -359,8 +359,8 @@
     "ipo_date": "2017-02-28",
     "first_open": 5.914,
     "change_pct": 4.94,
-    "price_at_924": 20.32,
-    "gain_since_924": 107.19,
+    "price_at_924": 20.46,
+    "gain_since_924": 105.77,
     "pullback_pct": 4.19,
     "consecutive_new_high_days": 4,
     "ma5_deviation": 9.54,
@@ -380,8 +380,8 @@
     "broke_ma5_after_ath": false,
     "broke_ma10_after_ath": false,
     "broke_ma20_after_ath": false,
-    "industry": "电子",
-    "concept": "精密电子/FPC/AI终端"
+    "industry": "通用设备",
+    "concept": "机构重仓/QFII重仓/新材料/昨日高换手/荣耀概念"
   },
   {
     "code": "301128",
@@ -407,8 +407,8 @@
     "ipo_date": "2021-11-30",
     "first_open": 25.5,
     "change_pct": 20.0,
-    "price_at_924": 90.56,
-    "gain_since_924": 43.57,
+    "price_at_924": 89.2,
+    "gain_since_924": 45.76,
     "pullback_pct": 0.0,
     "consecutive_new_high_days": 4,
     "ma5_deviation": 15.04,
@@ -428,8 +428,8 @@
     "broke_ma5_after_ath": false,
     "broke_ma10_after_ath": false,
     "broke_ma20_after_ath": false,
-    "industry": "机械设备",
-    "concept": "精密零件/消费电子/苹果产业链"
+    "industry": "专用设备",
+    "concept": "数据中心/半导体概念/华为概念/苹果概念/人形机器人"
   },
   {
     "code": "002463",
@@ -476,8 +476,8 @@
     "broke_ma5_after_ath": false,
     "broke_ma10_after_ath": false,
     "broke_ma20_after_ath": false,
-    "industry": "电子",
-    "concept": "PCB/高速通信/AI服务器"
+    "industry": "元件",
+    "concept": "新能源车/国产芯片/PCB/华为概念/无人驾驶"
   },
   {
     "code": "300201",
@@ -503,8 +503,8 @@
     "ipo_date": "2011-04-29",
     "first_open": 2.027,
     "change_pct": 5.33,
-    "price_at_924": 5.36,
-    "gain_since_924": 121.08,
+    "price_at_924": 5.32,
+    "gain_since_924": 122.74,
     "pullback_pct": 0.75,
     "consecutive_new_high_days": 3,
     "ma5_deviation": 7.57,
@@ -524,8 +524,8 @@
     "broke_ma5_after_ath": false,
     "broke_ma10_after_ath": false,
     "broke_ma20_after_ath": false,
-    "industry": "机械设备",
-    "concept": "高空作业/机器人/智能制造"
+    "industry": "工程机械",
+    "concept": "工程机械概念/储能概念/核污染防治/工业互联/军民融合"
   },
   {
     "code": "300720",
@@ -551,8 +551,8 @@
     "ipo_date": "2017-11-30",
     "first_open": 3.996,
     "change_pct": 6.46,
-    "price_at_924": 26.46,
-    "gain_since_924": 99.17,
+    "price_at_924": 26.7,
+    "gain_since_924": 97.38,
     "pullback_pct": 1.13,
     "consecutive_new_high_days": 3,
     "ma5_deviation": 8.25,
@@ -572,8 +572,8 @@
     "broke_ma5_after_ath": false,
     "broke_ma10_after_ath": false,
     "broke_ma20_after_ath": false,
-    "industry": "机械设备",
-    "concept": "工业自动化/机器人/智能制造"
+    "industry": "通用设备",
+    "concept": "贬值受益"
   },
   {
     "code": "000533",
@@ -620,8 +620,8 @@
     "broke_ma5_after_ath": true,
     "broke_ma10_after_ath": false,
     "broke_ma20_after_ath": false,
-    "industry": "机械设备",
-    "concept": "核电/新能源/高端装备"
+    "industry": "电网设备",
+    "concept": "储能概念/数据中心/百度概念/阿里概念/海洋经济"
   },
   {
     "code": "301369",
@@ -647,8 +647,8 @@
     "ipo_date": "2022-09-30",
     "first_open": 87.247,
     "change_pct": 12.81,
-    "price_at_924": 78.131,
-    "gain_since_924": 92.32,
+    "price_at_924": 75.861,
+    "gain_since_924": 98.07,
     "pullback_pct": 3.06,
     "consecutive_new_high_days": 2,
     "ma5_deviation": 8.23,
@@ -668,8 +668,8 @@
     "broke_ma5_after_ath": false,
     "broke_ma10_after_ath": false,
     "broke_ma20_after_ath": false,
-    "industry": "半导体",
-    "concept": "芯片测试/探针卡/国产替代"
+    "industry": "半导体设备",
+    "concept": "第三代半导体/半导体概念/百元股/专精特新"
   },
   {
     "code": "688325",
@@ -695,8 +695,8 @@
     "ipo_date": "2022-04-29",
     "first_open": 51.159,
     "change_pct": 5.78,
-    "price_at_924": 67.28,
-    "gain_since_924": 99.23,
+    "price_at_924": 74.68,
+    "gain_since_924": 79.49,
     "pullback_pct": 1.44,
     "consecutive_new_high_days": 2,
     "ma5_deviation": 6.92,
@@ -716,8 +716,8 @@
     "broke_ma5_after_ath": false,
     "broke_ma10_after_ath": false,
     "broke_ma20_after_ath": false,
-    "industry": "半导体",
-    "concept": "模拟芯片/信号链/国产替代"
+    "industry": "模拟芯片设计",
+    "concept": "半导体概念/国产芯片/锂电池概念/电池技术/科创板做市股"
   },
   {
     "code": "688331",
@@ -764,8 +764,8 @@
     "broke_ma5_after_ath": true,
     "broke_ma10_after_ath": false,
     "broke_ma20_after_ath": false,
-    "industry": "医药生物",
-    "concept": "创新药/ADC/生物医药"
+    "industry": "其他生物制品",
+    "concept": "AH股/小盘股/创新药/百元股"
   },
   {
     "code": "301093",
@@ -791,8 +791,8 @@
     "ipo_date": "2021-11-30",
     "first_open": 38.269,
     "change_pct": 6.51,
-    "price_at_924": 35.67,
-    "gain_since_924": 152.31,
+    "price_at_924": 35.13,
+    "gain_since_924": 156.19,
     "pullback_pct": 2.16,
     "consecutive_new_high_days": 2,
     "ma5_deviation": 4.09,
@@ -812,8 +812,8 @@
     "broke_ma5_after_ath": false,
     "broke_ma10_after_ath": false,
     "broke_ma20_after_ath": false,
-    "industry": "化工",
-    "concept": "气瓶/氢能源/新能源"
+    "industry": "医疗耗材",
+    "concept": "人工智能/医疗器械概念/AI制药（医疗）/创新药"
   },
   {
     "code": "002150",
@@ -860,8 +860,8 @@
     "broke_ma5_after_ath": false,
     "broke_ma10_after_ath": false,
     "broke_ma20_after_ath": false,
-    "industry": "电气设备",
-    "concept": "逆变器/光伏/新能源"
+    "industry": "通用设备",
+    "concept": "储能概念/乡村振兴/贬值受益/风能/长江三角"
   },
   {
     "code": "605058",
@@ -908,8 +908,8 @@
     "broke_ma5_after_ath": false,
     "broke_ma10_after_ath": false,
     "broke_ma20_after_ath": false,
-    "industry": "电子",
-    "concept": "PCB/覆铜板/AI算力基础设施"
+    "industry": "元件",
+    "concept": "商业航天/卫星互联网/新能源车/PCB/工业互联"
   },
   {
     "code": "002859",
@@ -956,8 +956,8 @@
     "broke_ma5_after_ath": false,
     "broke_ma10_after_ath": false,
     "broke_ma20_after_ath": false,
-    "industry": "电子",
-    "concept": "电子辅材/离型膜/MLCC"
+    "industry": "其他电子Ⅲ",
+    "concept": "被动元件概念/固态电池/国产芯片/MLCC/PCB"
   },
   {
     "code": "002831",
@@ -1004,8 +1004,8 @@
     "broke_ma5_after_ath": false,
     "broke_ma10_after_ath": false,
     "broke_ma20_after_ath": false,
-    "industry": "包装印刷",
-    "concept": "消费电子包装/苹果产业链/环保包装"
+    "industry": "纸包装",
+    "concept": "降解塑料/深圳特区/社保重仓/造纸印刷"
   },
   {
     "code": "301105",
@@ -1052,7 +1052,7 @@
     "broke_ma5_after_ath": true,
     "broke_ma10_after_ath": true,
     "broke_ma20_after_ath": false,
-    "industry": "机械设备",
-    "concept": "锂电设备/自动化/新能源"
+    "industry": "专用设备",
+    "concept": "QFII重仓/中俄贸易概念"
   }
 ]
