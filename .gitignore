@@ -4,3 +4,6 @@ historical_highs.json
 .claude/
 data_js.txt
 *.tmp
+# Generated files (deployed to gh-pages branch)
+index.html
+new_high_stocks.json

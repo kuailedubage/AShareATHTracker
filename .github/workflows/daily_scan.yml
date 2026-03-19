@@ -48,11 +48,23 @@ jobs:
       - name: Generate report
         run: python generate_report.py
 
-      - name: Commit results
+      - name: Deploy to gh-pages
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add new_high_stocks.json index.html
-          # Only commit if there are changes
+
+          # Save generated files
+          cp index.html /tmp/index.html
+          cp new_high_stocks.json /tmp/new_high_stocks.json
+
+          # Switch to gh-pages branch
+          git fetch origin gh-pages
+          git checkout gh-pages
+
+          # Update files
+          cp /tmp/index.html index.html
+          cp /tmp/new_high_stocks.json new_high_stocks.json
+
+          git add index.html new_high_stocks.json
           git diff --staged --quiet || git commit -m "data: $(date +%Y-%m-%d) ATH scan results"
-          git push
+          git push origin gh-pages
