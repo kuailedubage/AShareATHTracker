@@ -3,7 +3,7 @@ name: Daily A-Share ATH Scan
 on:
   # 每个交易日收盘后运行 (15:30 CST = 07:30 UTC)
   schedule:
-    - cron: '30 7 * * 1-5'  # 周一到周五
+    - cron: '1 * * * 1-5'  # 周一到周五
   # 支持手动触发
   workflow_dispatch:
 
