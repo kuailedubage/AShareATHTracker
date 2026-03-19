@@ -245,29 +245,33 @@ function initChart(id){const el=document.getElementById(id);if(!el)return null;c
 // ===== TREEMAP (Concept/Theme Distribution) =====
 function renderTreemap(){
   const c=initChart('treemapChart');if(!c)return;
-  // Parse concepts: split by "/" and count occurrences, also track stocks per concept
   const conceptMap={};
   DATA.forEach(d=>{
     if(!d.concept)return;
     d.concept.split('/').forEach(tag=>{
       tag=tag.trim();if(!tag)return;
-      if(!conceptMap[tag])conceptMap[tag]={count:0,stocks:[],totalScore:0};
+      if(!conceptMap[tag])conceptMap[tag]={count:0,stockDetails:[],totalChg:0,totalScore:0};
       conceptMap[tag].count++;
-      conceptMap[tag].stocks.push(d.name);
+      conceptMap[tag].stockDetails.push({name:d.name,chg:d.change_pct,score:d.strength_score});
+      conceptMap[tag].totalChg+=d.change_pct;
       conceptMap[tag].totalScore+=d.strength_score;
     });
   });
-  // Group concepts by broad category via first concept of each stock's industry
+  // Color helper: map avgChg to red/green
+  function chgColor(avg){
+    if(avg>=0){const t=Math.min(avg/12,1);const r=Math.round(120+135*t);const g=Math.round(60*(1-t));return `rgb(${r},${g},${Math.round(30*(1-t))})`}
+    else{const t=Math.min(Math.abs(avg)/12,1);const g=Math.round(100+155*t);const r=Math.round(60*(1-t));return `rgb(${r},${g},${Math.round(30*(1-t))})`}
+  }
   const treeData=Object.entries(conceptMap)
     .sort((a,b)=>b[1].count-a[1].count)
-    .map(([tag,info])=>({
-      name:tag,
-      value:info.count,
-      avgScore:+(info.totalScore/info.count).toFixed(1),
-      stocks:info.stocks.join('、')
-    }));
-  const neonColors=[C.cyan,C.mag,C.purple,C.pink,'#00cc66','#ff8800','#44aaff','#ff4444','#aaffcc','#ffcc00','#8866ff','#ff66aa'];
-  c.setOption({...eTheme,title:{text:'题材概念热力矩阵',subtext:'面积=出现次数 · 颜色=平均强度评分',left:'center',...eTheme.title,subtextStyle:{color:'#666'}},tooltip:{...eTheme.tooltip,formatter:p=>{const d=p.data;if(!d.stocks)return d.name;return `<div style="font-size:14px;font-weight:700;margin-bottom:4px;color:${C.cyan}">${d.name}</div><div>出现次数: <b>${d.value}</b> 只</div><div>平均强度: <b>${d.avgScore}</b></div><div style="margin-top:4px;color:#aaa;font-size:11px">个股: ${d.stocks}</div>`}},series:[{type:'treemap',roam:false,nodeClick:false,width:'95%',height:'85%',top:55,breadcrumb:{show:false},data:treeData,label:{show:true,formatter:p=>`${p.name}\n${p.data.value}只`,fontSize:12,color:'#e0e0ff',fontWeight:600,lineHeight:18},itemStyle:{borderRadius:4,borderColor:'rgba(0,255,242,.12)',borderWidth:2,gapWidth:3},levels:[{colorSaturation:[.4,.9],itemStyle:{borderColorSaturation:.6,gapWidth:3,borderWidth:2}}],visualMin:35,visualMax:80,visualDimension:'avgScore',color:['#7b2ff7','#ff00ff','#ff4444','#00fff2']}]});
+    .map(([tag,info])=>{
+      const avgChg=+(info.totalChg/info.count).toFixed(2);
+      const avgScore=+(info.totalScore/info.count).toFixed(1);
+      return {name:tag,value:info.count,avgChg,avgScore,
+        stockDetails:info.stockDetails,
+        itemStyle:{color:chgColor(avgChg)}}
+    });
+  c.setOption({...eTheme,title:{text:'题材概念热力矩阵',subtext:'面积=出现次数 · 颜色=平均涨跌幅（红涨绿跌）',left:'center',...eTheme.title,subtextStyle:{color:'#666'}},tooltip:{...eTheme.tooltip,formatter:p=>{const d=p.data;if(!d.stockDetails)return d.name;const list=d.stockDetails.map(s=>`<span style="color:${s.chg>=0?'#ff4444':'#00cc66'}">${s.name} ${s.chg>=0?'+':''}${s.chg.toFixed(2)}%</span> 强度:${s.score}`).join('<br>');return `<div style="font-size:14px;font-weight:700;margin-bottom:4px;color:${C.cyan}">${d.name}</div><div>数量: <b>${d.value}</b>只 · 平均涨幅: <span style="color:${d.avgChg>=0?'#ff4444':'#00cc66'}">${d.avgChg>=0?'+':''}${d.avgChg}%</span></div><div style="margin-top:4px;font-size:11px;line-height:1.6">${list}</div>`}},series:[{type:'treemap',roam:false,nodeClick:false,width:'95%',height:'85%',top:55,breadcrumb:{show:false},data:treeData,label:{show:true,formatter:p=>{const avg=p.data.avgChg;return `${p.name}\n${avg>=0?'+':''}${avg}%`},fontSize:12,color:'#e0e0ff',fontWeight:600,lineHeight:18},itemStyle:{borderRadius:4,borderColor:'rgba(255,255,255,.15)',borderWidth:2,gapWidth:3},levels:[{itemStyle:{gapWidth:3,borderWidth:2}}]}]});
   return c;
 }
 
@@ -294,17 +298,19 @@ function renderMcapDist(){
 // ===== CONCEPT FREQUENCY BAR =====
 function renderConceptBar(){
   const c=initChart('conceptBarChart');if(!c)return;
-  const conceptCount={};
+  const conceptInfo={};
   DATA.forEach(d=>{
     if(!d.concept)return;
     d.concept.split('/').forEach(tag=>{
       tag=tag.trim();if(!tag)return;
-      conceptCount[tag]=(conceptCount[tag]||0)+1;
+      if(!conceptInfo[tag])conceptInfo[tag]={count:0,stocks:[]};
+      conceptInfo[tag].count++;
+      conceptInfo[tag].stocks.push({name:d.name,chg:d.change_pct,score:d.strength_score});
     });
   });
-  const sorted=Object.entries(conceptCount).sort((a,b)=>b[1]-a[1]).slice(0,15);
+  const sorted=Object.entries(conceptInfo).sort((a,b)=>b[1].count-a[1].count).slice(0,15);
   const colors=sorted.map((_,i)=>{const t=i/sorted.length;return `hsl(${180+t*120},80%,${55-t*15}%)`});
-  c.setOption({...eTheme,title:{text:'TOP15 热门概念',left:'center',...eTheme.title},tooltip:{...eTheme.tooltip,trigger:'axis',axisPointer:{type:'shadow'}},grid:{left:100,right:40,top:50,bottom:20},xAxis:{type:'value',axisLabel:{color:'#666'},splitLine:{lineStyle:{color:'rgba(255,255,255,.04)'}},axisLine:{lineStyle:{color:'rgba(255,255,255,.1)'}}},yAxis:{type:'category',data:sorted.map(s=>s[0]).reverse(),axisLabel:{color:'#ccc',fontSize:11},axisLine:{show:false},axisTick:{show:false}},series:[{type:'bar',data:sorted.map((s,i)=>({value:s[1],itemStyle:{color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'rgba(123,47,247,.7)'},{offset:1,color:i<3?C.cyan:i<8?C.mag:C.purple}]),borderRadius:[0,4,4,0]}})).reverse(),barWidth:18,label:{show:true,position:'right',formatter:'{c}只',color:'#aaa',fontSize:12,fontFamily:'JetBrains Mono'}}]});
+  c.setOption({...eTheme,title:{text:'TOP15 热门概念',left:'center',...eTheme.title},tooltip:{...eTheme.tooltip,trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>{const idx=sorted.length-1-p[0].dataIndex;const info=sorted[idx];if(!info)return'';const [tag,detail]=info;const list=detail.stocks.map(s=>`<span style="color:${s.chg>=0?'#ff4444':'#00cc66'}">${s.name} ${s.chg>=0?'+':''}${s.chg.toFixed(2)}%</span> 强度:${s.score}`).join('<br>');return `<div style="font-size:14px;font-weight:700;margin-bottom:4px;color:${C.cyan}">${tag}</div><div style="font-size:12px;line-height:1.6">${list}</div>`}},grid:{left:100,right:40,top:50,bottom:20},xAxis:{type:'value',axisLabel:{color:'#666'},splitLine:{lineStyle:{color:'rgba(255,255,255,.04)'}},axisLine:{lineStyle:{color:'rgba(255,255,255,.1)'}}},yAxis:{type:'category',data:sorted.map(s=>s[0]).reverse(),axisLabel:{color:'#ccc',fontSize:11},axisLine:{show:false},axisTick:{show:false}},series:[{type:'bar',data:sorted.map((s,i)=>({value:s[1].count,itemStyle:{color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'rgba(123,47,247,.7)'},{offset:1,color:i<3?C.cyan:i<8?C.mag:C.purple}]),borderRadius:[0,4,4,0]}})).reverse(),barWidth:18,label:{show:true,position:'right',formatter:'{c}只',color:'#aaa',fontSize:12,fontFamily:'JetBrains Mono'}}]});
   return c;
 }
 
