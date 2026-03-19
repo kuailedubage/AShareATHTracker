@@ -97,8 +97,8 @@
     "broke_ma20_after_ath": false,
     "industry": "化学纤维",
     "concept": "商业航天/氢能源/碳纤维/低空经济/飞行汽车(eVTOL)",
-    "driving_concept": "商业航天",
-    "driving_concept_rank": -1,
+    "driving_concept": "碳纤维",
+    "driving_concept_rank": 69,
     "recent_announcements": [
       "[2026-03-13] 中复神鹰碳纤维股份有限公司股票交易异常波动公告",
       "[2026-03-18] 中复神鹰碳纤维股份有限公司股票交易异常波动暨严重异常波动公告",
@@ -152,8 +152,8 @@
     "broke_ma20_after_ath": false,
     "industry": "专用设备",
     "concept": "数据中心/半导体概念/华为概念/苹果概念/昨日首板",
-    "driving_concept": "数据中心",
-    "driving_concept_rank": -1,
+    "driving_concept": "半导体概念",
+    "driving_concept_rank": 18,
     "recent_announcements": [
       "[2026-03-06] 关于2026年度新增金融担保额度预计及授权并在公司担保额度内增加担保对象的公告",
       "[2026-03-13] 国信证券股份有限公司关于深圳市强瑞精密技术股份有限公司部分募集资金投资项目增加实施主体、实施地点的核查意见",
@@ -267,7 +267,7 @@
     "industry": "通用设备",
     "concept": "贬值受益",
     "driving_concept": "贬值受益",
-    "driving_concept_rank": -1,
+    "driving_concept_rank": 22,
     "recent_announcements": [
       "[2026-03-18] 关于公司股东减持股份实施情况的公告",
       "[2026-03-10] 关于使用闲置自有资金进行现金管理的进展公告"
@@ -377,8 +377,8 @@
     "broke_ma20_after_ath": false,
     "industry": "工程机械",
     "concept": "工程机械概念/储能概念/核污染防治/工业互联/军民融合",
-    "driving_concept": "工业互联",
-    "driving_concept_rank": -1,
+    "driving_concept": "军民融合",
+    "driving_concept_rank": 21,
     "recent_announcements": [
       "[2026-03-18] 关于持股5%以上股东增持公司股份变动触及1%整数倍暨增持计划完成的公告"
     ]
@@ -538,8 +538,8 @@
     "broke_ma20_after_ath": true,
     "industry": "消费电子零部件及组装",
     "concept": "国产芯片/OLED/人工智能/云计算/军工",
-    "driving_concept": "人工智能",
-    "driving_concept_rank": -1,
+    "driving_concept": "军工",
+    "driving_concept_rank": 2,
     "recent_announcements": []
   },
   {
@@ -589,8 +589,8 @@
     "broke_ma20_after_ath": true,
     "industry": "分立器件",
     "concept": "半导体概念/国产芯片/西部大开发/基金重仓/通信技术",
-    "driving_concept": "国产芯片",
-    "driving_concept_rank": -1,
+    "driving_concept": "半导体概念",
+    "driving_concept_rank": 18,
     "recent_announcements": [
       "[2026-03-07] 陕西源杰半导体科技股份有限公司董事和高级管理人员所持公司股份及其变动管理制度(草案)(H股发行并上市后适用)",
       "[2026-03-07] 陕西源杰半导体科技股份有限公司股东通讯政策(草案)(H股发行并上市后适用)",
@@ -646,8 +646,8 @@
     "broke_ma20_after_ath": false,
     "industry": "元件",
     "concept": "PCB/华为概念/增强现实/虚拟现实/智能穿戴",
-    "driving_concept": "华为概念",
-    "driving_concept_rank": -1,
+    "driving_concept": "PCB",
+    "driving_concept_rank": 63,
     "recent_announcements": [
       "[2026-03-05] 部分实际控制人、部分董事减持股份结果公告",
       "[2026-03-17] 关于以集中竞价交易方式回购公司股份方案暨回购报告书",
@@ -703,8 +703,8 @@
     "broke_ma20_after_ath": false,
     "industry": "元件",
     "concept": "商业航天/卫星互联网/新能源车/PCB/工业互联",
-    "driving_concept": "工业互联",
-    "driving_concept_rank": -1,
+    "driving_concept": "新能源车",
+    "driving_concept_rank": 30,
     "recent_announcements": [
       "[2026-03-05] 澳弘电子关于使用闲置募集资金进行现金管理到期赎回的公告",
       "[2026-03-14] 澳弘电子关于使用部分闲置自有资金进行现金管理的公告"
@@ -757,8 +757,8 @@
     "broke_ma20_after_ath": false,
     "industry": "塑料",
     "concept": "新材料/节能环保/人形机器人/娃哈哈概念/机器人概念",
-    "driving_concept": "新材料",
-    "driving_concept_rank": -1,
+    "driving_concept": "人形机器人",
+    "driving_concept_rank": 51,
     "recent_announcements": [
       "[2026-03-10] 关于万凯转债预计触发赎回条件的提示性公告",
       "[2026-03-17] 关于不提前赎回万凯转债的公告",
