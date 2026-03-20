@@ -98,7 +98,7 @@
     "industry": "IT服务Ⅲ",
     "concept": "数据中心/边缘计算/工业互联/量子科技/网络安全",
     "driving_concept": "数据中心",
-    "driving_concept_rank": -1,
+    "driving_concept_rank": 5,
     "recent_announcements": [
       "[2026-03-19] 关于股票交易异常波动的公告",
       "[2026-03-16] 北京证券有限责任公司关于北京铜牛信息科技股份有限公司详式权益变动报告书之财务顾问核查意见",
@@ -154,8 +154,8 @@
     "broke_ma20_after_ath": false,
     "industry": "专用设备",
     "concept": "数据中心/半导体概念/华为概念/苹果概念/人形机器人",
-    "driving_concept": "半导体概念",
-    "driving_concept_rank": -1,
+    "driving_concept": "数据中心",
+    "driving_concept_rank": 5,
     "recent_announcements": [
       "[2026-03-06] 关于2026年度新增金融担保额度预计及授权并在公司担保额度内增加担保对象的公告",
       "[2026-03-13] 国信证券股份有限公司关于深圳市强瑞精密技术股份有限公司部分募集资金投资项目增加实施主体、实施地点的核查意见",
@@ -211,8 +211,8 @@
     "broke_ma20_after_ath": false,
     "industry": "工程咨询服务Ⅱ",
     "concept": "人工智能/机构重仓/AIGC概念",
-    "driving_concept": "机构重仓",
-    "driving_concept_rank": -1,
+    "driving_concept": "人工智能",
+    "driving_concept_rank": 12,
     "recent_announcements": [
       "[2026-03-07] 关于累计非重大诉讼、仲裁进展情况的公告",
       "[2026-03-07] 关于使用部分闲置募集资金进行现金管理的进展公告"
@@ -265,8 +265,8 @@
     "broke_ma20_after_ath": false,
     "industry": "计算机设备",
     "concept": "机器视觉/远程办公/光刻机(胶)/华为概念/无人驾驶",
-    "driving_concept": "华为概念",
-    "driving_concept_rank": -1,
+    "driving_concept": "远程办公",
+    "driving_concept_rank": 35,
     "recent_announcements": []
   },
   {
@@ -354,8 +354,8 @@
     "gap_to_new_high": 0.0,
     "drop_to_break_ma5": 15.17,
     "gain_from_low": 124.57,
-    "gain_since_924": 64.35,
-    "price_at_924": 36.72,
+    "gain_since_924": 69.09,
+    "price_at_924": 35.69,
     "ipo_price": 39.874,
     "ma20": 41.14,
     "ma20_deviation": 46.7,
@@ -370,8 +370,8 @@
     "broke_ma20_after_ath": false,
     "industry": "逆变器",
     "concept": "储能概念/注册制次新股/光伏概念/小盘股/昨日高换手",
-    "driving_concept": "光伏概念",
-    "driving_concept_rank": -1,
+    "driving_concept": "昨日高换手",
+    "driving_concept_rank": 98,
     "recent_announcements": [
       "[2026-03-12] 股票交易异常波动公告"
     ]
@@ -423,8 +423,8 @@
     "broke_ma20_after_ath": false,
     "industry": "分立器件",
     "concept": "商业航天/数据中心/半导体概念/国产芯片/医美概念",
-    "driving_concept": "国产芯片",
-    "driving_concept_rank": -1,
+    "driving_concept": "数据中心",
+    "driving_concept_rank": 5,
     "recent_announcements": [
       "[2026-03-06] 股东及董事、高级管理人员减持股份结果公告",
       "[2026-03-19] 华泰联合证券有限责任公司关于苏州长光华芯光电技术股份有限公司2025年度日常关联交易确认的核查意见",
@@ -846,8 +846,8 @@
     "gap_to_new_high": 11.23,
     "drop_to_break_ma5": 1.14,
     "gain_from_low": 300.58,
-    "gain_since_924": 99.19,
-    "price_at_924": 124.0,
+    "gain_since_924": 94.81,
+    "price_at_924": 126.79,
     "ipo_price": 190.51,
     "ma20": 232.15,
     "ma20_deviation": 6.4,
@@ -964,8 +964,8 @@
     "broke_ma20_after_ath": true,
     "industry": "消费电子零部件及组装",
     "concept": "国产芯片/OLED/人工智能/云计算/军工",
-    "driving_concept": "国产芯片",
-    "driving_concept_rank": -1,
+    "driving_concept": "人工智能",
+    "driving_concept_rank": 12,
     "recent_announcements": []
   }
 ]
