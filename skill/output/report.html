@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>A股历史新高雷达 | 2026-03-18</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a1a;--bg2:#0f0f2a;--bg3:#141438;--cyan:#00fff2;--magenta:#ff00ff;--purple:#7b2ff7;--pink:#ff6bda;--gold:#ffd700;--green:#00cc66;--red:#ff4444;--text:#e0e0ff;--text2:#8888aa;--glow-cyan:0 0 20px rgba(0,255,242,.3);--glow-mag:0 0 20px rgba(255,0,255,.3);--glow-purple:0 0 20px rgba(123,47,247,.3)}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;min-height:100vh}
+.mono{font-family:'JetBrains Mono',monospace}
+.neon-border{border:1px solid rgba(0,255,242,.15);box-shadow:inset 0 0 30px rgba(0,255,242,.03)}
+.neon-glow{text-shadow:0 0 10px var(--cyan),0 0 40px rgba(0,255,242,.2)}
+.mag-glow{text-shadow:0 0 10px var(--magenta),0 0 40px rgba(255,0,255,.2)}
+.card{background:linear-gradient(135deg,rgba(15,15,42,.9),rgba(20,20,56,.7));border:1px solid rgba(0,255,242,.1);border-radius:12px;backdrop-filter:blur(10px)}
+.card:hover{border-color:rgba(0,255,242,.3);box-shadow:var(--glow-cyan)}
+.progress-bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--cyan),var(--magenta),var(--purple));z-index:9999;transform-origin:left;transform:scaleX(0)}
+.grain{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9998;opacity:.03;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.scanline{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9997;background:repeating-linear-gradient(transparent,transparent 2px,rgba(0,0,0,.03) 2px,rgba(0,0,0,.03) 4px)}
+.hero-bg{background:radial-gradient(ellipse at 30% 20%,rgba(123,47,247,.15) 0%,transparent 50%),radial-gradient(ellipse at 70% 80%,rgba(0,255,242,.1) 0%,transparent 50%),radial-gradient(ellipse at 50% 50%,rgba(255,0,255,.05) 0%,transparent 70%)}
+.stat-card{position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent)}
+.stat-card::after{content:'';position:absolute;bottom:-50%;right:-20%;width:60%;height:100%;background:radial-gradient(ellipse,rgba(0,255,242,.05),transparent);pointer-events:none}
+.table-container{overflow-x:auto}
+.data-table{width:100%;border-collapse:separate;border-spacing:0}
+.data-table th{position:sticky;top:0;background:rgba(10,10,26,.95);backdrop-filter:blur(10px);padding:10px 12px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--cyan);border-bottom:1px solid rgba(0,255,242,.2);cursor:pointer;white-space:nowrap;transition:all .2s}
+.data-table th:hover{color:var(--magenta);text-shadow:var(--glow-mag)}
+.data-table th.sorted-asc::after{content:' ▲';color:#ff4444}
+.data-table th.sorted-desc::after{content:' ▼';color:#00cc66}
+.data-table td{padding:8px 12px;font-size:13px;border-bottom:1px solid rgba(255,255,255,.04);white-space:nowrap;transition:background .2s}
+.data-table tr:hover td{background:rgba(0,255,242,.04)}
+.data-table .pos{color:#ff4444}
+.data-table .neg{color:#00cc66}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:.5px}
+.tag-main{background:rgba(0,255,242,.12);color:var(--cyan)}
+.tag-gem{background:rgba(255,0,255,.12);color:var(--magenta)}
+.tag-star{background:rgba(123,47,247,.15);color:#a78bfa}
+.search-input{background:rgba(255,255,255,.05);border:1px solid rgba(0,255,242,.15);border-radius:8px;padding:10px 16px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;transition:all .3s}
+.search-input:focus{border-color:var(--cyan);box-shadow:var(--glow-cyan)}
+.search-input::placeholder{color:var(--text2)}
+@keyframes pulse-glow{0%,100%{opacity:.6}50%{opacity:1}}
+.pulse{animation:pulse-glow 2s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.float-anim{animation:float 6s ease-in-out infinite}
+.section{opacity:0;transform:translateY(40px)}
+</style>
+</head>
+<body>
+<!-- Progress bar -->
+<div class="progress-bar" id="progressBar"></div>
+<div class="grain"></div>
+<div class="scanline"></div>
+
+<!-- HERO SECTION -->
+<section class="hero-bg min-h-screen flex flex-col items-center justify-center relative px-4" id="hero">
+  <div class="absolute inset-0 overflow-hidden pointer-events-none">
+    <div class="absolute w-96 h-96 rounded-full bg-purple-600/5 blur-3xl top-10 -left-20 float-anim"></div>
+    <div class="absolute w-80 h-80 rounded-full bg-cyan-400/5 blur-3xl bottom-20 right-10 float-anim" style="animation-delay:-3s"></div>
+  </div>
+  <div class="text-center relative z-10">
+    <div class="mono text-xs tracking-[6px] text-cyan-400/60 mb-6">MARKET INTELLIGENCE SYSTEM</div>
+    <h1 class="text-5xl md:text-7xl font-black tracking-tight leading-none mb-4">
+      <span class="neon-glow">历史新高</span><span class="mag-glow">雷达</span>
+    </h1>
+    <p class="text-lg md:text-xl text-gray-400 font-light mt-4 max-w-2xl mx-auto leading-relaxed">
+      A股全市场扫描 · 上市以来股价创新高个股追踪
+    </p>
+    <div class="mono text-xs text-cyan-400/40 mt-8 tracking-widest">2026.03.18 · NEON NOIR EDITION</div>
+    <div class="mt-12 flex items-center gap-2 justify-center text-gray-500 text-sm">
+      <svg class="w-4 h-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+      <span>向下滚动探索</span>
+    </div>
+  </div>
+</section>
+<!-- DASHBOARD KPI SECTION -->
+<section class="py-20 px-4 md:px-8 max-w-7xl mx-auto section" id="dashboard">
+  <div class="flex items-center gap-3 mb-12">
+    <div class="w-1 h-8 bg-gradient-to-b from-cyan-400 to-transparent rounded-full"></div>
+    <h2 class="text-2xl font-bold tracking-tight">全景概览</h2>
+    <div class="flex-1 h-px bg-gradient-to-r from-cyan-400/20 to-transparent ml-4"></div>
+  </div>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8" id="kpiCards">
+    <!-- Filled by JS -->
+  </div>
+  <!-- Secondary stats row -->
+  <div class="grid grid-cols-2 md:grid-cols-6 gap-3" id="secondaryStats">
+    <!-- Filled by JS -->
+  </div>
+</section>
+
+<!-- CHARTS ROW 1: TreeMap + Board Distribution -->
+<section class="py-12 px-4 md:px-8 max-w-7xl mx-auto section" id="chartsRow1">
+  <div class="flex items-center gap-3 mb-8">
+    <div class="w-1 h-8 bg-gradient-to-b from-magenta-400 to-transparent rounded-full" style="background:linear-gradient(to bottom,var(--magenta),transparent)"></div>
+    <h2 class="text-2xl font-bold tracking-tight">题材概念热力 · 板块分布</h2>
+    <div class="flex-1 h-px bg-gradient-to-r from-purple-500/20 to-transparent ml-4"></div>
+  </div>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="card p-4 lg:col-span-2"><div id="treemapChart" style="height:400px"></div></div>
+    <div class="card p-4"><div id="boardPieChart" style="height:400px"></div></div>
+  </div>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+    <div class="card p-4"><div id="mcapDistChart" style="height:380px"></div></div>
+    <div class="card p-4"><div id="conceptBarChart" style="height:380px"></div></div>
+  </div>
+</section>
+
+<!-- CHARTS ROW 2: Strength Bar + Bubble Scatter -->
+<section class="py-12 px-4 md:px-8 max-w-7xl mx-auto section" id="chartsRow2">
+  <div class="flex items-center gap-3 mb-8">
+    <div class="w-1 h-8 bg-gradient-to-b from-green-400 to-transparent rounded-full" style="background:linear-gradient(to bottom,var(--green),transparent)"></div>
+    <h2 class="text-2xl font-bold tracking-tight">强度评分 · 牛市动能</h2>
+    <div class="flex-1 h-px bg-gradient-to-r from-green-500/20 to-transparent ml-4"></div>
+  </div>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="card p-4"><div id="strengthBarChart" style="height:450px"></div></div>
+    <div class="card p-4"><div id="bubbleChart" style="height:450px"></div></div>
+  </div>
+</section>
+
+<!-- CHARTS ROW 3: Gain Comparison + Turnover vs Pullback -->
+<section class="py-12 px-4 md:px-8 max-w-7xl mx-auto section" id="chartsRow3">
+  <div class="flex items-center gap-3 mb-8">
+    <div class="w-1 h-8 bg-gradient-to-b to-transparent rounded-full" style="background:linear-gradient(to bottom,var(--gold),transparent)"></div>
+    <h2 class="text-2xl font-bold tracking-tight">涨幅对比 · 量价关系</h2>
+    <div class="flex-1 h-px bg-gradient-to-r from-yellow-500/20 to-transparent ml-4"></div>
+  </div>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="card p-4"><div id="gainCompareChart" style="height:420px"></div></div>
+    <div class="card p-4"><div id="turnoverScatterChart" style="height:420px"></div></div>
+  </div>
+</section>
+
+<!-- CHARTS ROW 4: MA Deviation Radar + Risk/Reward Matrix -->
+<section class="py-12 px-4 md:px-8 max-w-7xl mx-auto section" id="chartsRow4">
+  <div class="flex items-center gap-3 mb-8">
+    <div class="w-1 h-8 bg-gradient-to-b to-transparent rounded-full" style="background:linear-gradient(to bottom,var(--pink),transparent)"></div>
+    <h2 class="text-2xl font-bold tracking-tight">均线偏离 · 风险收益矩阵</h2>
+    <div class="flex-1 h-px bg-gradient-to-r from-pink-500/20 to-transparent ml-4"></div>
+  </div>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="card p-4"><div id="radarChart" style="height:450px"></div></div>
+    <div class="card p-4"><div id="riskRewardChart" style="height:450px"></div></div>
+  </div>
+</section>
+<!-- DATA TABLE SECTION -->
+<section class="py-12 px-4 md:px-8 max-w-7xl mx-auto section" id="tableSection">
+  <div class="flex items-center gap-3 mb-8">
+    <div class="w-1 h-8 bg-gradient-to-b to-transparent rounded-full" style="background:linear-gradient(to bottom,var(--cyan),transparent)"></div>
+    <h2 class="text-2xl font-bold tracking-tight">全量数据矩阵</h2>
+    <div class="flex-1 h-px bg-gradient-to-r from-cyan-500/20 to-transparent ml-4"></div>
+  </div>
+  <div class="card p-6">
+    <div class="flex flex-wrap gap-4 mb-6 items-center">
+      <input type="text" class="search-input flex-1 min-w-[200px]" placeholder="搜索代码 / 名称 / 行业 / 概念..." id="searchInput">
+      <div class="flex gap-2" id="boardFilters">
+        <button class="tag tag-main cursor-pointer hover:opacity-80 board-filter active" data-board="all">全部</button>
+        <button class="tag tag-main cursor-pointer hover:opacity-80 board-filter" data-board="主板">主板</button>
+        <button class="tag tag-gem cursor-pointer hover:opacity-80 board-filter" data-board="创业板">创业板</button>
+        <button class="tag tag-star cursor-pointer hover:opacity-80 board-filter" data-board="科创板">科创板</button>
+      </div>
+    </div>
+    <div class="table-container" style="max-height:600px;overflow-y:auto">
+      <table class="data-table" id="mainTable">
+        <thead><tr id="tableHead"></tr></thead>
+        <tbody id="tableBody"></tbody>
+      </table>
+    </div>
+    <div class="mt-4 text-xs text-gray-500 mono" id="tableCount"></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<section class="py-16 text-center">
+  <div class="mono text-xs text-gray-600 tracking-widest">A股历史新高雷达 · NEON NOIR · DATA CINEMA</div>
+  <div class="text-xs text-gray-700 mt-2">数据来源: 腾讯财经 via easyquotation · 仅供研究参考</div>
+</section>
+<script>
+// ===== DATA =====
+const DATA=[{"code":"688295","prefix":"sh","name":"中复神鹰","board":"科创板","today_high":60.73,"prev_ath":59.4,"prev_ath_date":"2022-11-30","now_price":60.62,"close_yesterday":59.4,"open":55.55,"low":52.32,"volume":4205381300,"turnover":4.67,"pe":564.44,"pb":11.55,"market_cap":545.58,"float_cap":545.58,"amplitude":14.16,"all_time_low":16.11,"low_date":"2024-09-30","ipo_date":"2022-04-29","first_open":32.274,"change_pct":2.05,"price_at_924":27.69,"gain_since_924":118.92,"pullback_pct":0.18,"consecutive_new_high_days":8,"ma5_deviation":17.58,"ma5":51.56,"gap_to_new_high":0.18,"drop_to_break_ma5":14.95,"gain_from_low":276.29,"ipo_price":32.274,"ma20":36.37,"ma20_deviation":66.66,"ma10":41.61,"volume_ratio":1.06,"strength_score":80.3,"true_consecutive_ath_days":2,"days_since_prev_ath":1204,"longest_daily_higher_high":8,"broke_ma5_after_ath":false,"broke_ma10_after_ath":false,"broke_ma20_after_ath":false,"industry":"新材料","concept":"碳纤维/军工新材料/国产替代"},{"code":"603929","prefix":"sh","name":"亚翔集成","board":"主板","today_high":182.0,"prev_ath":170.4,"prev_ath_date":"2026-01-30","now_price":181.88,"close_yesterday":170.4,"open":173.81,"low":167.15,"volume":9627000,"turnover":4.51,"pe":43.5,"pb":16.84,"market_cap":388.06,"float_cap":388.06,"amplitude":8.71,"all_time_low":2.8,"low_date":"2016-12-30","ipo_date":"2016-12-30","first_open":2.8,"change_pct":6.74,"price_at_924":41.98,"gain_since_924":333.25,"pullback_pct":0.07,"consecutive_new_high_days":5,"ma5_deviation":17.18,"ma5":155.21,"gap_to_new_high":0.07,"drop_to_break_ma5":14.66,"gain_from_low":6395.71,"ipo_price":2.8,"ma20":143.15,"ma20_deviation":27.05,"ma10":144.7,"volume_ratio":1.66,"strength_score":78.3,"true_consecutive_ath_days":2,"days_since_prev_ath":47,"longest_daily_higher_high":8,"broke_ma5_after_ath":false,"broke_ma10_after_ath":false,"broke_ma20_after_ath":false,"industry":"建筑装饰","concept":"半导体洁净室/芯片国产化/净化工程"},{"code":"688525","prefix":"sh","name":"佰维存储","board":"科创板","today_high":259.99,"prev_ath":243.33,"prev_ath_date":"2026-03-10","now_price":258.09,"close_yesterday":235.78,"open":244.51,"low":241.0,"volume":4736838000,"turnover":10.14,"pe":139.1,"pb":22.1,"market_cap":1205.62,"float_cap":1205.62,"amplitude":8.05,"all_time_low":15.0,"low_date":"2022-12-30","ipo_date":"2022-12-30","first_open":15.37,"change_pct":9.46,"price_at_924":74.96,"gain_since_924":244.3,"pullback_pct":0.73,"consecutive_new_high_days":5,"ma5_deviation":12.79,"ma5":228.82,"gap_to_new_high":0.74,"drop_to_break_ma5":11.34,"gain_from_low":1620.6,"ipo_price":15.37,"ma20":192.19,"ma20_deviation":34.29,"ma10":218.94,"volume_ratio":1.18,"strength_score":75.9,"true_consecutive_ath_days":3,"days_since_prev_ath":8,"longest_daily_higher_high":6,"broke_ma5_after_ath":true,"broke_ma10_after_ath":false,"broke_ma20_after_ath":false,"industry":"半导体","concept":"存储芯片/国产替代/AI算力"},{"code":"301248","prefix":"sz","name":"杰创智能","board":"创业板","today_high":60.96,"prev_ath":60.5,"prev_ath_date":"2026-03-02","now_price":60.2,"close_yesterday":53.7,"open":53.8,"low":53.0,"volume":14122400,"turnover":12.57,"pe":7442.66,"pb":6.06,"market_cap":92.53,"float_cap":67.62,"amplitude":14.82,"all_time_low":8.191,"low_date":"2024-02-29","ipo_date":"2022-04-29","first_open":29.614,"change_pct":12.1,"price_at_924":29.78,"gain_since_924":102.15,"pullback_pct":1.25,"consecutive_new_high_days":5,"ma5_deviation":11.24,"ma5":54.12,"gap_to_new_high":1.26,"drop_to_break_ma5":10.11,"gain_from_low":634.95,"ipo_price":29.614,"ma20":52.24,"ma20_deviation":15.23,"ma10":52.68,"volume_ratio":2.02,"strength_score":75.3,"true_consecutive_ath_days":1,"days_since_prev_ath":16,"longest_daily_higher_high":8,"broke_ma5_after_ath":true,"broke_ma10_after_ath":true,"broke_ma20_after_ath":true,"industry":"计算机","concept":"智慧城市/AI应用/数字化"},{"code":"001309","prefix":"sz","name":"德明利","board":"主板","today_high":374.0,"prev_ath":359.96,"prev_ath_date":"2026-03-11","now_price":374.0,"close_yesterday":354.0,"open":359.0,"low":355.0,"volume":19248300,"turnover":11.96,"pe":123.26,"pb":25.95,"market_cap":848.4,"float_cap":601.68,"amplitude":5.37,"all_time_low":12.141,"low_date":"2022-07-29","ipo_date":"2022-07-29","first_open":12.141,"change_pct":5.65,"price_at_924":99.8,"gain_since_924":274.75,"pullback_pct":0.0,"consecutive_new_high_days":5,"ma5_deviation":10.42,"ma5":338.72,"gap_to_new_high":0.0,"drop_to_break_ma5":9.43,"gain_from_low":2980.47,"ipo_price":12.141,"ma20":278.27,"ma20_deviation":34.4,"ma10":309.43,"volume_ratio":0.94,"strength_score":74.7,"true_consecutive_ath_days":4,"days_since_prev_ath":7,"longest_daily_higher_high":12,"broke_ma5_after_ath":false,"broke_ma10_after_ath":false,"broke_ma20_after_ath":false,"industry":"半导体","concept":"存储模组/闪存/国产替代"},{"code":"300042","prefix":"sz","name":"朗科科技","board":"创业板","today_high":61.08,"prev_ath":52.49,"prev_ath_date":"2023-06-30","now_price":61.08,"close_yesterday":50.9,"open":53.0,"low":52.02,"volume":51074100,"turnover":25.49,"pe":-205.68,"pb":12.22,"market_cap":122.4,"float_cap":122.39,"amplitude":17.8,"all_time_low":3.777,"low_date":"2012-12-31","ipo_date":"2010-01-29","first_open":16.15,"change_pct":20.0,"price_at_924":25.04,"gain_since_924":143.93,"pullback_pct":0.0,"consecutive_new_high_days":4,"ma5_deviation":30.46,"ma5":46.82,"gap_to_new_high":0.0,"drop_to_break_ma5":23.35,"gain_from_low":1517.16,"ipo_price":16.15,"ma20":38.5,"ma20_deviation":58.65,"ma10":42.5,"volume_ratio":1.63,"strength_score":73.2,"true_consecutive_ath_days":2,"days_since_prev_ath":992,"longest_daily_higher_high":6,"broke_ma5_after_ath":false,"broke_ma10_after_ath":false,"broke_ma20_after_ath":false,"industry":"计算机","concept":"闪存专利/数据存储/知识产权"},{"code":"002636","prefix":"sz","name":"金安国纪","board":"主板","today_high":35.0,"prev_ath":34.16,"prev_ath_date":"2015-06-26","now_price":34.8,"close_yesterday":32.42,"open":31.82,"low":31.5,"volume":76269800,"turnover":10.53,"pe":229.17,"pb":7.27,"market_cap":253.34,"float_cap":252.06,"amplitude":10.8,"all_time_low":1.649,"low_date":"2012-12-31","ipo_date":"2011-11-30","first_open":4.537,"change_pct":7.34,"price_at_924":13.56,"gain_since_924":156.64,"pullback_pct":0.57,"consecutive_new_high_days":4,"ma5_deviation":11.45,"ma5":31.22,"gap_to_new_high":0.57,"drop_to_break_ma5":10.28,"gain_from_low":2010.37,"ipo_price":4.537,"ma20":27.86,"ma20_deviation":24.92,"ma10":29.05,"volume_ratio":1.43,"strength_score":72.2,"true_consecutive_ath_days":1,"days_since_prev_ath":3918,"longest_daily_higher_high":7,"broke_ma5_after_ath":false,"broke_ma10_after_ath":false,"broke_ma20_after_ath":false,"industry":"电子","concept":"PCB/覆铜板/AI算力基础设施"},{"code":"300606","prefix":"sz","name":"金太阳","board":"创业板","today_high":43.94,"prev_ath":42.3,"prev_ath_date":"2023-11-30","now_price":42.1,"close_yesterday":40.12,"open":40.5,"low":40.3,"volume":29558500,"turnover":25.12,"pe":-368.15,"pb":8.63,"market_cap":58.24,"float_cap":49.54,"amplitude":9.07,"all_time_low":5.914,"low_date":"2017-02-28","ipo_date":"2017-02-28","first_open":5.914,"change_pct":4.94,"price_at_924":20.32,"gain_since_924":107.19,"pullback_pct":4.19,"consecutive_new_high_days":4,"ma5_deviation":9.54,"ma5":38.43,"gap_to_new_high":4.37,"drop_to_break_ma5":8.71,"gain_from_low":611.87,"ipo_price":5.914,"ma20":36.3,"ma20_deviation":15.99,"ma10":37.41,"volume_ratio":1.86,"strength_score":70.3,"true_consecutive_ath_days":2,"days_since_prev_ath":839,"longest_daily_higher_high":7,"broke_ma5_after_ath":false,"broke_ma10_after_ath":false,"broke_ma20_after_ath":false,"industry":"电子","concept":"精密电子/FPC/AI终端"},{"code":"301128","prefix":"sz","name":"强瑞技术","board":"创业板","today_high":130.02,"prev_ath":125.49,"prev_ath_date":"2026-01-30","now_price":130.02,"close_yesterday":108.35,"open":108.22,"low":107.25,"volume":14157400,"turnover":16.05,"pe":100.29,"pb":15.11,"market_cap":134.49,"float_cap":114.72,"amplitude":21.02,"all_time_low":14.793,"low_date":"2024-02-29","ipo_date":"2021-11-30","first_open":25.5,"change_pct":20.0,"price_at_924":90.56,"gain_since_924":43.57,"pullback_pct":0.0,"consecutive_new_high_days":4,"ma5_deviation":15.04,"ma5":113.03,"gap_to_new_high":0.0,"drop_to_break_ma5":13.07,"gain_from_low":778.93,"ipo_price":25.5,"ma20":108.59,"ma20_deviation":19.73,"ma10":109.64,"volume_ratio":3.05,"strength_score":69.7,"true_consecutive_ath_days":1,"days_since_prev_ath":47,"longest_daily_higher_high":6,"broke_ma5_after_ath":false,"broke_ma10_after_ath":false,"broke_ma20_after_ath":false,"industry":"机械设备","concept":"精密零件/消费电子/苹果产业链"},{"code":"002463","prefix":"sz","name":"沪电股份","board":"主板","today_high":93.96,"prev_ath":90.1,"prev_ath_date":"2026-02-27","now_price":91.0,"close_yesterday":85.59,"open":88.01,"low":86.3,"volume":152471700,"turnover":7.93,"pe":45.81,"pb":11.59,"market_cap":1751.17,"float_cap":1749.76,"amplitude":8.95,"all_time_low":0.291,"low_date":"2013-06-28","ipo_date":"2010-08-31","first_open":5.348,"change_pct":6.32,"price_at_924":69.83,"gain_since_924":30.32,"pullback_pct":3.15,"consecutive_new_high_days":6,"ma5_deviation":8.84,"ma5":83.61,"gap_to_new_high":3.25,"drop_to_break_ma5":8.12,"gain_from_low":31171.48,"ipo_price":5.348,"ma20":77.93,"ma20_deviation":16.78,"ma10":79.8,"volume_ratio":1.35,"strength_score":68.5,"true_consecutive_ath_days":2,"days_since_prev_ath":19,"longest_daily_higher_high":9,"broke_ma5_after_ath":false,"broke_ma10_after_ath":false,"broke_ma20_after_ath":false,"industry":"电子","concept":"PCB/高速通信/AI服务器"},{"code":"300201","prefix":"sz","name":"海伦哲","board":"创业板","today_high":11.94,"prev_ath":11.59,"prev_ath_date":"2015-05-29","now_price":11.85,"close_yesterday":11.25,"open":11.16,"low":11.13,"volume":74366100,"turnover":7.41,"pe":44.79,"pb":7.08,"market_cap":119.57,"float_cap":118.94,"amplitude":7.2,"all_time_low":1.028,"low_date":"2012-07-31","ipo_date":"2011-04-29","first_open":2.027,"change_pct":5.33,"price_at_924":5.36,"gain_since_924":121.08,"pullback_pct":0.75,"consecutive_new_high_days":3,"ma5_deviation":7.57,"ma5":11.02,"gap_to_new_high":0.76,"drop_to_break_ma5":7.04,"gain_from_low":1052.72,"ipo_price":2.027,"ma20":9.79,"ma20_deviation":21.01,"ma10":10.53,"volume_ratio":1.34,"strength_score":66.7,"true_consecutive_ath_days":2,"days_since_prev_ath":3946,"longest_daily_higher_high":5,"broke_ma5_after_ath":false,"broke_ma10_after_ath":false,"broke_ma20_after_ath":false,"industry":"机械设备","concept":"高空作业/机器人/智能制造"},{"code":"300720","prefix":"sz","name":"海川智能","board":"创业板","today_high":53.3,"prev_ath":52.88,"prev_ath_date":"2026-03-13","now_price":52.7,"close_yesterday":49.5,"open":50.48,"low":48.8,"volume":10484600,"turnover":6.0,"pe":265.3,"pb":17.54,"market_cap":102.7,"float_cap":92.04,"amplitude":9.09,"all_time_low":3.996,"low_date":"2017-11-30","ipo_date":"2017-11-30","first_open":3.996,"change_pct":6.46,"price_at_924":26.46,"gain_since_924":99.17,"pullback_pct":1.13,"consecutive_new_high_days":3,"ma5_deviation":8.25,"ma5":48.68,"gap_to_new_high":1.14,"drop_to_break_ma5":7.62,"gain_from_low":1218.82,"ipo_price":3.996,"ma20":40.27,"ma20_deviation":30.88,"ma10":44.78,"volume_ratio":0.87,"strength_score":64.3,"true_consecutive_ath_days":2,"days_since_prev_ath":5,"longest_daily_higher_high":7,"broke_ma5_after_ath":false,"broke_ma10_after_ath":false,"broke_ma20_after_ath":false,"industry":"机械设备","concept":"工业自动化/机器人/智能制造"},{"code":"000533","prefix":"sz","name":"顺钠股份","board":"主板","today_high":21.84,"prev_ath":20.53,"prev_ath_date":"2026-03-12","now_price":19.75,"close_yesterday":20.53,"open":20.95,"low":19.66,"volume":246610800,"turnover":36.01,"pe":132.11,"pb":14.39,"market_cap":136.44,"float_cap":135.27,"amplitude":10.62,"all_time_low":0.923,"low_date":"1994-07-29","ipo_date":"1994-01-31","first_open":4.112,"change_pct":-3.8,"price_at_924":7.28,"gain_since_924":171.29,"pullback_pct":9.57,"consecutive_new_high_days":4,"ma5_deviation":4.23,"ma5":18.95,"gap_to_new_high":10.58,"drop_to_break_ma5":4.06,"gain_from_low":2039.76,"ipo_price":4.112,"ma20":14.55,"ma20_deviation":35.78,"ma10":17.51,"volume_ratio":1.07,"strength_score":63.8,"true_consecutive_ath_days":2,"days_since_prev_ath":6,"longest_daily_higher_high":10,"broke_ma5_after_ath":true,"broke_ma10_after_ath":false,"broke_ma20_after_ath":false,"industry":"机械设备","concept":"核电/新能源/高端装备"},{"code":"301369","prefix":"sz","name":"联动科技","board":"创业板","today_high":155.0,"prev_ath":148.0,"prev_ath_date":"2026-01-30","now_price":150.26,"close_yesterday":133.2,"open":137.0,"low":137.0,"volume":2570200,"turnover":7.07,"pe":541.72,"pb":7.11,"market_cap":106.05,"float_cap":54.64,"amplitude":13.51,"all_time_low":28.624,"low_date":"2024-02-29","ipo_date":"2022-09-30","first_open":87.247,"change_pct":12.81,"price_at_924":78.131,"gain_since_924":92.32,"pullback_pct":3.06,"consecutive_new_high_days":2,"ma5_deviation":8.23,"ma5":138.84,"gap_to_new_high":3.15,"drop_to_break_ma5":7.6,"gain_from_low":424.94,"ipo_price":87.247,"ma20":133.42,"ma20_deviation":12.62,"ma10":137.73,"volume_ratio":3.34,"strength_score":62.6,"true_consecutive_ath_days":1,"days_since_prev_ath":47,"longest_daily_higher_high":5,"broke_ma5_after_ath":false,"broke_ma10_after_ath":false,"broke_ma20_after_ath":false,"industry":"半导体","concept":"芯片测试/探针卡/国产替代"},{"code":"688325","prefix":"sh","name":"赛微微电","board":"科创板","today_high":136.0,"prev_ath":131.47,"prev_ath_date":"2026-03-16","now_price":134.04,"close_yesterday":126.71,"open":126.25,"low":126.25,"volume":269374200,"turnover":3.3,"pe":119.84,"pb":6.42,"market_cap":115.46,"float_cap":109.46,"amplitude":7.69,"all_time_low":17.209,"low_date":"2024-02-29","ipo_date":"2022-04-29","first_open":51.159,"change_pct":5.78,"price_at_924":67.28,"gain_since_924":99.23,"pullback_pct":1.44,"consecutive_new_high_days":2,"ma5_deviation":6.92,"ma5":125.36,"gap_to_new_high":1.46,"drop_to_break_ma5":6.48,"gain_from_low":678.89,"ipo_price":51.159,"ma20":112.4,"ma20_deviation":19.25,"ma10":118.48,"volume_ratio":1.11,"strength_score":58.6,"true_consecutive_ath_days":1,"days_since_prev_ath":2,"longest_daily_higher_high":6,"broke_ma5_after_ath":false,"broke_ma10_after_ath":false,"broke_ma20_after_ath":false,"industry":"半导体","concept":"模拟芯片/信号链/国产替代"},{"code":"688331","prefix":"sh","name":"荣昌生物","board":"科创板","today_high":124.0,"prev_ath":120.52,"prev_ath_date":"2026-03-11","now_price":123.35,"close_yesterday":115.06,"open":115.06,"low":115.0,"volume":964194300,"turnover":5.91,"pe":98.27,"pb":18.36,"market_cap":696.28,"float_cap":201.18,"amplitude":7.82,"all_time_low":22.37,"low_date":"2024-09-30","ipo_date":"2022-03-31","first_open":46.0,"change_pct":7.2,"price_at_924":107.4,"gain_since_924":14.85,"pullback_pct":0.52,"consecutive_new_high_days":3,"ma5_deviation":7.11,"ma5":115.16,"gap_to_new_high":0.53,"drop_to_break_ma5":6.64,"gain_from_low":451.41,"ipo_price":46.0,"ma20":105.17,"ma20_deviation":17.28,"ma10":111.93,"volume_ratio":1.34,"strength_score":53.2,"true_consecutive_ath_days":2,"days_since_prev_ath":7,"longest_daily_higher_high":8,"broke_ma5_after_ath":true,"broke_ma10_after_ath":false,"broke_ma20_after_ath":false,"industry":"医药生物","concept":"创新药/ADC/生物医药"},{"code":"301093","prefix":"sz","name":"华兰股份","board":"创业板","today_high":91.99,"prev_ath":89.77,"prev_ath_date":"2026-02-27","now_price":90.0,"close_yesterday":84.5,"open":84.39,"low":83.13,"volume":6514300,"turnover":4.15,"pe":291.76,"pb":6.8,"market_cap":147.78,"float_cap":141.24,"amplitude":10.49,"all_time_low":13.015,"low_date":"2024-07-31","ipo_date":"2021-11-30","first_open":38.269,"change_pct":6.51,"price_at_924":35.67,"gain_since_924":152.31,"pullback_pct":2.16,"consecutive_new_high_days":2,"ma5_deviation":4.09,"ma5":86.46,"gap_to_new_high":2.21,"drop_to_break_ma5":3.93,"gain_from_low":591.51,"ipo_price":38.269,"ma20":82.44,"ma20_deviation":9.17,"ma10":85.72,"volume_ratio":1.75,"strength_score":46.1,"true_consecutive_ath_days":1,"days_since_prev_ath":19,"longest_daily_higher_high":7,"broke_ma5_after_ath":false,"broke_ma10_after_ath":false,"broke_ma20_after_ath":false,"industry":"化工","concept":"气瓶/氢能源/新能源"},{"code":"002150","prefix":"sz","name":"正泰电源","board":"主板","today_high":35.1,"prev_ath":34.98,"prev_ath_date":"2026-03-13","now_price":33.1,"close_yesterday":34.87,"open":35.01,"low":32.32,"volume":45662600,"turnover":12.74,"pe":48.47,"pb":5.97,"market_cap":119.45,"float_cap":118.68,"amplitude":7.97,"all_time_low":0.382,"low_date":"2008-10-31","ipo_date":"2007-08-31","first_open":9.612,"change_pct":-5.08,"price_at_924":15.54,"gain_since_924":113.0,"pullback_pct":5.7,"consecutive_new_high_days":3,"ma5_deviation":-0.21,"ma5":33.17,"gap_to_new_high":6.04,"drop_to_break_ma5":-0.21,"gain_from_low":8564.92,"ipo_price":9.612,"ma20":29.12,"ma20_deviation":13.69,"ma10":30.44,"volume_ratio":1.43,"strength_score":45.8,"true_consecutive_ath_days":1,"days_since_prev_ath":5,"longest_daily_higher_high":8,"broke_ma5_after_ath":false,"broke_ma10_after_ath":false,"broke_ma20_after_ath":false,"industry":"电气设备","concept":"逆变器/光伏/新能源"},{"code":"605058","prefix":"sh","name":"澳弘电子","board":"主板","today_high":35.49,"prev_ath":35.29,"prev_ath_date":"2025-12-31","now_price":35.49,"close_yesterday":32.26,"open":32.16,"low":32.16,"volume":10304100,"turnover":7.21,"pe":34.28,"pb":2.91,"market_cap":50.72,"float_cap":50.72,"amplitude":10.32,"all_time_low":11.14,"low_date":"2024-02-29","ipo_date":"2020-10-30","first_open":24.65,"change_pct":10.01,"price_at_924":30.55,"gain_since_924":16.17,"pullback_pct":0.0,"consecutive_new_high_days":2,"ma5_deviation":6.32,"ma5":33.38,"gap_to_new_high":0.0,"drop_to_break_ma5":5.95,"gain_from_low":218.58,"ipo_price":24.65,"ma20":32.48,"ma20_deviation":9.27,"ma10":32.86,"volume_ratio":2.65,"strength_score":45.2,"true_consecutive_ath_days":1,"days_since_prev_ath":77,"longest_daily_higher_high":8,"broke_ma5_after_ath":false,"broke_ma10_after_ath":false,"broke_ma20_after_ath":false,"industry":"电子","concept":"PCB/覆铜板/AI算力基础设施"},{"code":"002859","prefix":"sz","name":"洁美科技","board":"主板","today_high":45.83,"prev_ath":45.8,"prev_ath_date":"2026-02-27","now_price":44.61,"close_yesterday":43.08,"open":42.36,"low":42.36,"volume":18579800,"turnover":4.58,"pe":95.74,"pb":6.56,"market_cap":192.37,"float_cap":181.07,"amplitude":8.05,"all_time_low":7.357,"low_date":"2017-04-28","ipo_date":"2017-04-28","first_open":7.357,"change_pct":3.55,"price_at_924":30.291,"gain_since_924":47.27,"pullback_pct":2.66,"consecutive_new_high_days":4,"ma5_deviation":3.48,"ma5":43.11,"gap_to_new_high":2.73,"drop_to_break_ma5":3.37,"gain_from_low":506.36,"ipo_price":7.357,"ma20":40.14,"ma20_deviation":11.12,"ma10":42.57,"volume_ratio":1.4,"strength_score":45.1,"true_consecutive_ath_days":1,"days_since_prev_ath":19,"longest_daily_higher_high":11,"broke_ma5_after_ath":false,"broke_ma10_after_ath":false,"broke_ma20_after_ath":false,"industry":"电子","concept":"电子辅材/离型膜/MLCC"},{"code":"002831","prefix":"sz","name":"裕同科技","board":"主板","today_high":39.38,"prev_ath":38.02,"prev_ath_date":"2026-03-16","now_price":38.08,"close_yesterday":35.8,"open":36.0,"low":34.23,"volume":28885600,"turnover":5.65,"pe":23.76,"pb":3.04,"market_cap":350.53,"float_cap":194.59,"amplitude":14.39,"all_time_low":13.238,"low_date":"2019-06-28","ipo_date":"2016-12-30","first_open":15.986,"change_pct":6.37,"price_at_924":26.998,"gain_since_924":41.05,"pullback_pct":3.3,"consecutive_new_high_days":2,"ma5_deviation":5.42,"ma5":36.12,"gap_to_new_high":3.41,"drop_to_break_ma5":5.14,"gain_from_low":187.66,"ipo_price":15.986,"ma20":32.68,"ma20_deviation":16.54,"ma10":33.86,"volume_ratio":1.05,"strength_score":42.6,"true_consecutive_ath_days":1,"days_since_prev_ath":2,"longest_daily_higher_high":8,"broke_ma5_after_ath":false,"broke_ma10_after_ath":false,"broke_ma20_after_ath":false,"industry":"包装印刷","concept":"消费电子包装/苹果产业链/环保包装"},{"code":"301105","prefix":"sz","name":"鸿铭股份","board":"创业板","today_high":59.58,"prev_ath":59.0,"prev_ath_date":"2026-03-10","now_price":58.8,"close_yesterday":55.25,"open":55.61,"low":54.91,"volume":1289400,"turnover":7.84,"pe":-127.15,"pb":3.52,"market_cap":29.4,"float_cap":9.67,"amplitude":8.45,"all_time_low":18.13,"low_date":"2024-02-29","ipo_date":"2022-12-30","first_open":40.58,"change_pct":6.43,"price_at_924":42.23,"gain_since_924":39.24,"pullback_pct":1.31,"consecutive_new_high_days":3,"ma5_deviation":5.11,"ma5":55.94,"gap_to_new_high":1.33,"drop_to_break_ma5":4.86,"gain_from_low":224.32,"ipo_price":40.58,"ma20":54.25,"ma20_deviation":8.39,"ma10":55.73,"volume_ratio":1.3,"strength_score":40.1,"true_consecutive_ath_days":1,"days_since_prev_ath":8,"longest_daily_higher_high":10,"broke_ma5_after_ath":true,"broke_ma10_after_ath":true,"broke_ma20_after_ath":false,"industry":"机械设备","concept":"锂电设备/自动化/新能源"}];
+
+// ===== UTILITIES =====
+const C={cyan:'#00fff2',mag:'#ff00ff',purple:'#7b2ff7',pink:'#ff6bda',gold:'#ffd700',green:'#00cc66',red:'#ff4444',bg:'#0a0a1a',bg2:'#0f0f2a',bg3:'#141438',text:'#e0e0ff',text2:'#8888aa'};
+const fmt=(v,d=2)=>typeof v==='number'?v.toFixed(d):v||'-';
+const pct=(v)=>{if(typeof v!=='number')return'-';const s=v.toFixed(2);return v>=0?`<span class="pos">+${s}%</span>`:`<span class="neg">${s}%</span>`};
+const boardTag=(b)=>{const m={'主板':'tag-main','创业板':'tag-gem','科创板':'tag-star'};return `<span class="tag ${m[b]||'tag-main'}">${b}</span>`};
+
+// ===== KPI CARDS =====
+function renderKPI(){
+  const avgScore=(DATA.reduce((a,d)=>a+d.strength_score,0)/DATA.length).toFixed(1);
+  const avgPullback=(DATA.reduce((a,d)=>a+d.pullback_pct,0)/DATA.length).toFixed(2);
+  const avgGain924=(DATA.reduce((a,d)=>a+d.gain_since_924,0)/DATA.length).toFixed(1);
+  const maxConsec=Math.max(...DATA.map(d=>d.consecutive_new_high_days));
+  const kpis=[
+    {label:'创新高个股',value:DATA.length,unit:'只',color:C.cyan,icon:'◉'},
+    {label:'平均强度评分',value:avgScore,unit:'/100',color:C.cyan,icon:'◈'},
+    {label:'平均回落幅度',value:avgPullback,unit:'%',color:C.green,icon:'▾'},
+    {label:'924以来平均涨幅',value:avgGain924,unit:'%',color:C.red,icon:'▴'},
+  ];
+  const el=document.getElementById('kpiCards');
+  el.innerHTML=kpis.map(k=>`
+    <div class="card stat-card p-6 text-center">
+      <div class="text-3xl mb-1" style="color:${k.color}">${k.icon}</div>
+      <div class="text-3xl md:text-4xl font-black mono" style="color:${k.color}">${k.value}</div>
+      <div class="text-xs text-gray-500 mt-1 mono">${k.unit}</div>
+      <div class="text-sm text-gray-400 mt-2">${k.label}</div>
+    </div>
+  `).join('');
+
+  // Secondary stats
+  const boards={};DATA.forEach(d=>{boards[d.board]=(boards[d.board]||0)+1});
+  const industries={};DATA.forEach(d=>{const ind=d.industry.split('/')[0];industries[ind]=(industries[ind]||0)+1});
+  const topIndustry=Object.entries(industries).sort((a,b)=>b[1]-a[1])[0];
+  const avgTurnover=(DATA.reduce((a,d)=>a+d.turnover,0)/DATA.length).toFixed(1);
+  const totalMcap=(DATA.reduce((a,d)=>a+d.market_cap,0)).toFixed(0);
+
+  const sec=[
+    {label:'最多连续新高',value:maxConsec+'天',color:C.cyan},
+    {label:'主板',value:(boards['主板']||0)+'只',color:C.cyan},
+    {label:'创业板',value:(boards['创业板']||0)+'只',color:C.mag},
+    {label:'最热行业',value:topIndustry?topIndustry[0]:'',color:C.purple},
+    {label:'平均换手率',value:avgTurnover+'%',color:C.pink},
+    {label:'总市值',value:totalMcap+'亿',color:C.gold},
+  ];
+  document.getElementById('secondaryStats').innerHTML=sec.map(s=>`
+    <div class="card p-3 text-center">
+      <div class="text-lg font-bold mono" style="color:${s.color}">${s.value}</div>
+      <div class="text-xs text-gray-500 mt-1">${s.label}</div>
+    </div>
+  `).join('');
+}
+
+// ===== ECHARTS THEME =====
+const eTheme={backgroundColor:'transparent',textStyle:{fontFamily:'Inter,sans-serif',color:'#8888aa'},title:{textStyle:{color:'#e0e0ff',fontWeight:700,fontSize:15}},tooltip:{backgroundColor:'rgba(10,10,26,.95)',borderColor:'rgba(0,255,242,.2)',textStyle:{color:'#e0e0ff',fontFamily:'JetBrains Mono,monospace',fontSize:12}},legend:{textStyle:{color:'#8888aa'}},grid:{containLabel:true}};
+
+function initChart(id){const el=document.getElementById(id);if(!el)return null;const c=echarts.init(el,null,{renderer:'svg'});return c;}
+
+// ===== TREEMAP (Concept/Theme Distribution) =====
+function renderTreemap(){
+  const c=initChart('treemapChart');if(!c)return;
+  const conceptMap={};
+  DATA.forEach(d=>{
+    if(!d.concept)return;
+    d.concept.split('/').forEach(tag=>{
+      tag=tag.trim();if(!tag)return;
+      if(!conceptMap[tag])conceptMap[tag]={count:0,stockDetails:[],totalChg:0,totalScore:0};
+      conceptMap[tag].count++;
+      conceptMap[tag].stockDetails.push({name:d.name,chg:d.change_pct,score:d.strength_score});
+      conceptMap[tag].totalChg+=d.change_pct;
+      conceptMap[tag].totalScore+=d.strength_score;
+    });
+  });
+  // Color helper: map avgChg to red/green
+  function chgColor(avg){
+    if(avg>=0){const t=Math.min(avg/12,1);const r=Math.round(120+135*t);const g=Math.round(60*(1-t));return `rgb(${r},${g},${Math.round(30*(1-t))})`}
+    else{const t=Math.min(Math.abs(avg)/12,1);const g=Math.round(100+155*t);const r=Math.round(60*(1-t));return `rgb(${r},${g},${Math.round(30*(1-t))})`}
+  }
+  const treeData=Object.entries(conceptMap)
+    .sort((a,b)=>b[1].count-a[1].count)
+    .map(([tag,info])=>{
+      const avgChg=+(info.totalChg/info.count).toFixed(2);
+      const avgScore=+(info.totalScore/info.count).toFixed(1);
+      return {name:tag,value:info.count,avgChg,avgScore,
+        stockDetails:info.stockDetails,
+        itemStyle:{color:chgColor(avgChg)}}
+    });
+  c.setOption({...eTheme,title:{text:'题材概念热力矩阵',subtext:'面积=出现次数 · 颜色=平均涨跌幅（红涨绿跌）',left:'center',...eTheme.title,subtextStyle:{color:'#666'}},tooltip:{...eTheme.tooltip,formatter:p=>{const d=p.data;if(!d.stockDetails)return d.name;const list=d.stockDetails.map(s=>`<span style="color:${s.chg>=0?'#ff4444':'#00cc66'}">${s.name} ${s.chg>=0?'+':''}${s.chg.toFixed(2)}%</span> 强度:${s.score}`).join('<br>');return `<div style="font-size:14px;font-weight:700;margin-bottom:4px;color:${C.cyan}">${d.name}</div><div>数量: <b>${d.value}</b>只 · 平均涨幅: <span style="color:${d.avgChg>=0?'#ff4444':'#00cc66'}">${d.avgChg>=0?'+':''}${d.avgChg}%</span></div><div style="margin-top:4px;font-size:11px;line-height:1.6">${list}</div>`}},series:[{type:'treemap',roam:false,nodeClick:false,width:'95%',height:'85%',top:55,breadcrumb:{show:false},data:treeData,label:{show:true,formatter:p=>{const avg=p.data.avgChg;return `${p.name}\n${avg>=0?'+':''}${avg}%`},fontSize:12,color:'#e0e0ff',fontWeight:600,lineHeight:18},itemStyle:{borderRadius:4,borderColor:'rgba(255,255,255,.15)',borderWidth:2,gapWidth:3},levels:[{itemStyle:{gapWidth:3,borderWidth:2}}]}]});
+  return c;
+}
+
+// ===== MARKET CAP DISTRIBUTION =====
+function renderMcapDist(){
+  const c=initChart('mcapDistChart');if(!c)return;
+  // Buckets: <100亿, 100-300亿, 300-1000亿, >1000亿
+  const buckets=[
+    {label:'<100亿\n(小盘)',min:0,max:100,count:0,stocks:[]},
+    {label:'100-300亿\n(中盘)',min:100,max:300,count:0,stocks:[]},
+    {label:'300-1000亿\n(中大盘)',min:300,max:1000,count:0,stocks:[]},
+    {label:'>1000亿\n(大盘)',min:1000,max:Infinity,count:0,stocks:[]}
+  ];
+  DATA.forEach(d=>{
+    for(const b of buckets){
+      if(d.market_cap>=b.min && d.market_cap<b.max){b.count++;b.stocks.push(d.name+'('+d.market_cap.toFixed(0)+'亿)');break;}
+    }
+  });
+  const colors=[C.purple,C.mag,C.cyan,C.gold];
+  c.setOption({...eTheme,title:{text:'市值规模分布',subtext:'创新高个股偏好哪个市值区间',left:'center',...eTheme.title,subtextStyle:{color:'#666'}},tooltip:{...eTheme.tooltip,trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>{const idx=p[0].dataIndex;const b=buckets[idx];return `<div style="font-weight:700;color:${colors[idx]}">${b.label.replace('\\n',' ')}</div><div>数量: ${b.count}只</div><div style="margin-top:4px;font-size:11px;color:#aaa">${b.stocks.join('<br>')}</div>`}},grid:{left:50,right:30,top:65,bottom:40},xAxis:{type:'category',data:buckets.map(b=>b.label),axisLabel:{color:'#aaa',fontSize:11,interval:0},axisLine:{lineStyle:{color:'rgba(255,255,255,.1)'}}},yAxis:{type:'value',minInterval:1,axisLabel:{color:'#666'},splitLine:{lineStyle:{color:'rgba(255,255,255,.04)'}},axisLine:{lineStyle:{color:'rgba(255,255,255,.1)'}}},series:[{type:'bar',data:buckets.map((b,i)=>({value:b.count,itemStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:colors[i]},{offset:1,color:colors[i].replace(')',',0.2)').replace('rgb','rgba')||'rgba(123,47,247,.2)'}]),borderRadius:[6,6,0,0]}})),barWidth:50,label:{show:true,position:'top',formatter:'{c}只',color:'#e0e0ff',fontSize:13,fontWeight:700,fontFamily:'JetBrains Mono'}}]});
+  return c;
+}
+
+// ===== CONCEPT FREQUENCY BAR =====
+function renderConceptBar(){
+  const c=initChart('conceptBarChart');if(!c)return;
+  const conceptInfo={};
+  DATA.forEach(d=>{
+    if(!d.concept)return;
+    d.concept.split('/').forEach(tag=>{
+      tag=tag.trim();if(!tag)return;
+      if(!conceptInfo[tag])conceptInfo[tag]={count:0,stocks:[]};
+      conceptInfo[tag].count++;
+      conceptInfo[tag].stocks.push({name:d.name,chg:d.change_pct,score:d.strength_score});
+    });
+  });
+  const sorted=Object.entries(conceptInfo).sort((a,b)=>b[1].count-a[1].count).slice(0,15);
+  const colors=sorted.map((_,i)=>{const t=i/sorted.length;return `hsl(${180+t*120},80%,${55-t*15}%)`});
+  c.setOption({...eTheme,title:{text:'TOP15 热门概念',left:'center',...eTheme.title},tooltip:{...eTheme.tooltip,trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>{const idx=sorted.length-1-p[0].dataIndex;const info=sorted[idx];if(!info)return'';const [tag,detail]=info;const list=detail.stocks.map(s=>`<span style="color:${s.chg>=0?'#ff4444':'#00cc66'}">${s.name} ${s.chg>=0?'+':''}${s.chg.toFixed(2)}%</span> 强度:${s.score}`).join('<br>');return `<div style="font-size:14px;font-weight:700;margin-bottom:4px;color:${C.cyan}">${tag}</div><div style="font-size:12px;line-height:1.6">${list}</div>`}},grid:{left:100,right:40,top:50,bottom:20},xAxis:{type:'value',axisLabel:{color:'#666'},splitLine:{lineStyle:{color:'rgba(255,255,255,.04)'}},axisLine:{lineStyle:{color:'rgba(255,255,255,.1)'}}},yAxis:{type:'category',data:sorted.map(s=>s[0]).reverse(),axisLabel:{color:'#ccc',fontSize:11},axisLine:{show:false},axisTick:{show:false}},series:[{type:'bar',data:sorted.map((s,i)=>({value:s[1].count,itemStyle:{color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'rgba(123,47,247,.7)'},{offset:1,color:i<3?C.cyan:i<8?C.mag:C.purple}]),borderRadius:[0,4,4,0]}})).reverse(),barWidth:18,label:{show:true,position:'right',formatter:'{c}只',color:'#aaa',fontSize:12,fontFamily:'JetBrains Mono'}}]});
+  return c;
+}
+
+// ===== BOARD PIE =====
+function renderBoardPie(){
+  const c=initChart('boardPieChart');if(!c)return;
+  const boards={};DATA.forEach(d=>{boards[d.board]=(boards[d.board]||0)+1});
+  const pieData=Object.entries(boards).map(([k,v])=>({name:k,value:v}));
+  const colorMap={'主板':C.cyan,'创业板':C.mag,'科创板':C.purple};
+  c.setOption({...eTheme,title:{text:'板块分布',left:'center',...eTheme.title},tooltip:{...eTheme.tooltip,trigger:'item',formatter:'{b}: {c}只 ({d}%)'},legend:{bottom:10,textStyle:{color:'#8888aa'}},series:[{type:'pie',radius:['42%','70%'],center:['50%','48%'],avoidLabelOverlap:true,itemStyle:{borderRadius:6,borderColor:'#0a0a1a',borderWidth:3},label:{color:'#e0e0ff',fontSize:12,formatter:'{b}\n{d}%'},emphasis:{label:{fontSize:14,fontWeight:700},itemStyle:{shadowBlur:20,shadowColor:'rgba(0,255,242,.3)'}},data:pieData.map(d=>({...d,itemStyle:{color:colorMap[d.name]||C.cyan}}))}]});
+  return c;
+}
+
+// ===== STRENGTH BAR =====
+function renderStrengthBar(){
+  const c=initChart('strengthBarChart');if(!c)return;
+  const sorted=[...DATA].sort((a,b)=>a.strength_score-b.strength_score);
+  c.setOption({...eTheme,title:{text:'强势度评分排名',left:'center',...eTheme.title},tooltip:{...eTheme.tooltip,trigger:'axis',axisPointer:{type:'shadow',shadowStyle:{color:'rgba(0,255,242,.03)'}},formatter:p=>{const d=p[0];const s=sorted[d.dataIndex];return `<div style="font-weight:700">${s.name} ${s.code}</div><div>强度评分: <span style="color:${C.cyan}">${s.strength_score}</span></div><div>驱动题材: <span style="color:${C.mag}">${s.driving_concept||'-'}</span></div><div>连续新高: ${s.consecutive_new_high_days}天</div><div>924涨幅: ${s.gain_since_924}%</div>`}},grid:{left:90,right:30,top:50,bottom:30},xAxis:{type:'value',axisLine:{lineStyle:{color:'rgba(255,255,255,.1)'}},axisLabel:{color:'#666'},splitLine:{lineStyle:{color:'rgba(255,255,255,.04)'}},max:100},yAxis:{type:'category',data:sorted.map(d=>d.name),axisLine:{show:false},axisTick:{show:false},axisLabel:{color:'#aaa',fontSize:12}},series:[{type:'bar',data:sorted.map(d=>({value:d.strength_score,itemStyle:{color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'rgba(123,47,247,.8)'},{offset:1,color:d.strength_score>60?C.cyan:d.strength_score>40?C.mag:'#ff4444'}]),borderRadius:[0,4,4,0]}})),barWidth:16,label:{show:true,position:'right',formatter:'{c}',color:'#aaa',fontSize:11,fontFamily:'JetBrains Mono'}}]});
+  return c;
+}
+
+// ===== BUBBLE SCATTER =====
+function renderBubble(){
+  const c=initChart('bubbleChart');if(!c)return;
+  c.setOption({...eTheme,title:{text:'连续新高 × 牛市涨幅',subtext:'气泡大小=市值',left:'center',...eTheme.title,subtextStyle:{color:'#666'}},tooltip:{...eTheme.tooltip,formatter:p=>{const d=p.data;return `<div style="font-weight:700">${d[3]} ${d[4]}</div><div>连续新高: ${d[0]}天</div><div>924涨幅: ${d[1]}%</div><div>市值: ${d[2]}亿</div><div>强度: ${d[5]}</div>`}},grid:{left:65,right:50,top:65,bottom:55},xAxis:{name:'连续新高天数',nameTextStyle:{color:'#666',padding:[10,0,0,0]},nameLocation:'center',nameGap:30,type:'value',min:0,max:10,axisLine:{lineStyle:{color:'rgba(255,255,255,.1)'}},axisLabel:{color:'#666'},splitLine:{lineStyle:{color:'rgba(255,255,255,.04)'}}},yAxis:{name:'924以来涨幅%',nameTextStyle:{color:'#666'},nameLocation:'end',type:'value',axisLine:{lineStyle:{color:'rgba(255,255,255,.1)'}},axisLabel:{color:'#666',formatter:'{value}%'},splitLine:{lineStyle:{color:'rgba(255,255,255,.04)'}}},series:[{type:'scatter',symbolSize:d=>Math.max(Math.sqrt(d[2])*2.5,12),data:DATA.map(d=>[d.consecutive_new_high_days,d.gain_since_924,d.market_cap,d.name,d.code,d.strength_score]),itemStyle:{color:p=>{const s=p.data[5];return s>65?C.cyan:s>50?C.green:s>40?C.mag:C.purple},shadowBlur:10,shadowColor:'rgba(0,255,242,.3)'},emphasis:{itemStyle:{shadowBlur:25,shadowColor:'rgba(0,255,242,.5)'}},label:{show:true,formatter:p=>p.data[3],fontSize:10,color:'#ccc',position:'top'}}]});
+  return c;
+}
+
+// ===== GAIN COMPARISON =====
+function renderGainCompare(){
+  const c=initChart('gainCompareChart');if(!c)return;
+  const sorted=[...DATA].sort((a,b)=>b.gain_since_924-a.gain_since_924);
+  c.setOption({...eTheme,title:{text:'924牛市以来涨幅 vs 历史最低涨幅',left:'center',...eTheme.title},tooltip:{...eTheme.tooltip,trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>`<div style="font-weight:700">${p[0].name}</div>${p.map(s=>`<div>${s.marker}${s.seriesName}: ${s.value}%</div>`).join('')}`},legend:{top:30,textStyle:{color:'#8888aa'}},grid:{left:80,right:40,top:70,bottom:80},xAxis:{type:'category',data:sorted.map(d=>d.name),axisLabel:{color:'#888',fontSize:10,rotate:35,margin:12},axisLine:{lineStyle:{color:'rgba(255,255,255,.1)'}}},yAxis:{type:'value',axisLabel:{color:'#666',formatter:'{value}%'},splitLine:{lineStyle:{color:'rgba(255,255,255,.04)'}},axisLine:{lineStyle:{color:'rgba(255,255,255,.1)'}}},series:[{name:'924以来涨幅',type:'bar',data:sorted.map(d=>d.gain_since_924),itemStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'#ff4444'},{offset:1,color:'rgba(255,68,68,.2)'}]),borderRadius:[3,3,0,0]},barWidth:14},{name:'历史最低涨幅',type:'bar',data:sorted.map(d=>Math.min(d.gain_from_low,3000)),itemStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'#ff6666'},{offset:1,color:'rgba(255,102,102,.15)'}]),borderRadius:[3,3,0,0]},barWidth:14}]});
+  return c;
+}
+
+// ===== TURNOVER VS PULLBACK SCATTER =====
+function renderTurnoverScatter(){
+  const c=initChart('turnoverScatterChart');if(!c)return;
+  c.setOption({...eTheme,title:{text:'换手率 × 新高后回落幅度',left:'center',...eTheme.title},tooltip:{...eTheme.tooltip,formatter:p=>{const d=p.data;return `<div style="font-weight:700">${d[3]}</div><div>换手率: ${d[0]}%</div><div>回落: ${d[1]}%</div><div>涨跌幅: <span style="color:${d[4]>=0?'#ff4444':'#00cc66'}">${d[4]>=0?'+':''}${d[4]}%</span></div>`}},grid:{left:60,right:50,top:50,bottom:55},xAxis:{name:'换手率%',nameTextStyle:{color:'#666',padding:[10,0,0,0]},nameLocation:'center',nameGap:30,type:'value',axisLine:{lineStyle:{color:'rgba(255,255,255,.1)'}},axisLabel:{color:'#666'},splitLine:{lineStyle:{color:'rgba(255,255,255,.04)'}}},yAxis:{name:'新高后回落%',nameTextStyle:{color:'#666'},nameLocation:'end',type:'value',inverse:true,axisLine:{lineStyle:{color:'rgba(255,255,255,.1)'}},axisLabel:{color:'#666'},splitLine:{lineStyle:{color:'rgba(255,255,255,.04)'}}},series:[{type:'scatter',symbolSize:18,data:DATA.map(d=>[d.turnover,d.pullback_pct,d.market_cap,d.name,d.change_pct]),itemStyle:{color:p=>p.data[4]>=0?C.red:C.green,shadowBlur:8,shadowColor:'rgba(0,255,242,.2)'},emphasis:{itemStyle:{shadowBlur:20}},label:{show:true,formatter:p=>p.data[3],fontSize:9,color:'#aaa',position:'right'}}]});
+  return c;
+}
+
+// ===== RADAR CHART (top 6 stocks) =====
+function renderRadar(){
+  const c=initChart('radarChart');if(!c)return;
+  const top6=DATA.slice(0,6);
+  const indicators=[
+    {name:'强度评分',max:100},
+    {name:'连续新高',max:10},
+    {name:'MA5偏离%',max:30},
+    {name:'924涨幅%',max:350},
+    {name:'换手率%',max:35},
+    {name:'量比',max:4}
+  ];
+  const colors=[C.cyan,C.mag,C.green,C.purple,C.pink,C.gold];
+  c.setOption({...eTheme,title:{text:'TOP6强势股多维雷达',left:'center',...eTheme.title},tooltip:{...eTheme.tooltip},legend:{bottom:5,textStyle:{color:'#8888aa',fontSize:10},data:top6.map(d=>d.name)},radar:{center:['50%','52%'],radius:'60%',indicator:indicators,axisName:{color:'#8888aa',fontSize:11},splitArea:{areaStyle:{color:['rgba(0,255,242,.02)','rgba(0,255,242,.04)','rgba(0,255,242,.02)','rgba(0,255,242,.04)','rgba(0,255,242,.02)']}},splitLine:{lineStyle:{color:'rgba(0,255,242,.08)'}},axisLine:{lineStyle:{color:'rgba(0,255,242,.1)'}}},series:[{type:'radar',data:top6.map((d,i)=>({name:d.name,value:[d.strength_score,d.consecutive_new_high_days,Math.min(d.ma5_deviation,30),Math.min(d.gain_since_924,350),Math.min(d.turnover,35),Math.min(d.volume_ratio||1,4)],lineStyle:{color:colors[i],width:2},itemStyle:{color:colors[i]},areaStyle:{color:colors[i].replace(')',',0.08)').replace('rgb','rgba')||`rgba(0,255,242,.08)`}}))}]});
+  return c;
+}
+
+// ===== RISK/REWARD MATRIX =====
+function renderRiskReward(){
+  const c=initChart('riskRewardChart');if(!c)return;
+  c.setOption({...eTheme,title:{text:'风险收益矩阵',subtext:'X=隔日跌破5日线所需跌幅 · Y=隔日创新高所需涨幅',left:'center',...eTheme.title,subtextStyle:{color:'#666',fontSize:10}},tooltip:{...eTheme.tooltip,formatter:p=>{const d=p.data;return `<div style="font-weight:700">${d[2]}</div><div>跌破MA5需跌: ${d[0]}%</div><div>创新高需涨: ${d[1]}%</div><div>强度: ${d[3]}</div>`}},grid:{left:60,right:50,top:75,bottom:55},xAxis:{name:'跌破MA5所需跌幅%',nameTextStyle:{color:'#666',padding:[10,0,0,0]},nameLocation:'center',nameGap:30,type:'value',axisLine:{lineStyle:{color:'rgba(255,255,255,.1)'}},axisLabel:{color:'#666'},splitLine:{lineStyle:{color:'rgba(255,255,255,.04)'}}},yAxis:{name:'创新高所需涨幅%',nameTextStyle:{color:'#666'},nameLocation:'end',type:'value',axisLine:{lineStyle:{color:'rgba(255,255,255,.1)'}},axisLabel:{color:'#666'},splitLine:{lineStyle:{color:'rgba(255,255,255,.04)'}}},visualMap:{show:false,dimension:3,min:30,max:80,inRange:{color:[C.green,C.mag,C.red]}},series:[{type:'scatter',symbolSize:22,data:DATA.map(d=>[d.drop_to_break_ma5,d.gap_to_new_high,d.name,d.strength_score]),label:{show:true,formatter:p=>p.data[2],fontSize:9,color:'#ccc',position:'top'},emphasis:{itemStyle:{shadowBlur:20,shadowColor:'rgba(0,255,242,.5)'}}}]});
+  return c;
+}
+
+// ===== DATA TABLE =====
+const TABLE_COLS=[
+  {key:'code',label:'代码',fmt:v=>`<span class="mono" style="color:${C.cyan}">${v}</span>`},
+  {key:'name',label:'名称',fmt:v=>`<span style="font-weight:600">${v}</span>`},
+  {key:'board',label:'市场分类',fmt:v=>boardTag(v)},
+  {key:'industry',label:'行业'},
+  {key:'concept',label:'核心概念',fmt:v=>`<span style="font-size:11px;color:#aaa;max-width:180px;display:inline-block;overflow:hidden;text-overflow:ellipsis" title="${v}">${v}</span>`},
+  {key:'driving_concept',label:'驱动题材',fmt:v=>v?`<span style="font-size:12px;color:${C.mag};font-weight:600">${v}</span>`:`<span style="color:#555">-</span>`},
+  {key:'recent_announcements',label:'近期公告',fmt:v=>{if(!v||!v.length)return`<span style="color:#555">-</span>`;const first=v[0].replace(/^\[\d{4}-\d{2}-\d{2}\]\s*/,'');const tip=v.join('\n');return`<span style="font-size:11px;color:#ddd;max-width:200px;display:inline-block;overflow:hidden;text-overflow:ellipsis;cursor:help" title="${tip.replace(/"/g,'&quot;')}">${first}</span>`}},
+  {key:'today_high',label:'今日最高价',fmt:v=>`<span class="mono">${fmt(v)}</span>`},
+  {key:'now_price',label:'收盘价',fmt:v=>`<span class="mono" style="font-weight:600">${fmt(v)}</span>`},
+  {key:'change_pct',label:'涨跌%',fmt:v=>pct(v),sort:'num'},
+  {key:'pullback_pct',label:'新高回落%',fmt:v=>`<span class="mono" style="color:#00cc66">${fmt(v)}%</span>`,sort:'num'},
+  {key:'turnover',label:'实际换手率%',fmt:v=>`<span class="mono">${fmt(v)}</span>`,sort:'num'},
+  {key:'consecutive_new_high_days',label:'连续新高(比前一日)',fmt:v=>`<span class="mono" style="color:${C.cyan}">${v}天</span>`,sort:'num'},
+  {key:'true_consecutive_ath_days',label:'连续新高(比历史)',fmt:v=>`<span class="mono" style="color:${C.mag}">${v}天</span>`,sort:'num'},
+  {key:'longest_daily_higher_high',label:'近一年连涨持续性(最长)',fmt:v=>`<span class="mono" style="color:${C.cyan}">${v}天</span>`,sort:'num'},
+  {key:'prev_ath_date',label:'上次新高'},
+  {key:'days_since_prev_ath',label:'上次新高(距今)',fmt:v=>{const clr=v>500?'#ff4444':v>100?'#ff8800':v>30?'#ffcc00':'#aaaaaa';return `<span class="mono" style="color:${clr};font-weight:600">${v}天</span>`},sort:'num'},
+  {key:'broke_ma5_after_ath',label:'上次新高后是否跌破过MA5',fmt:v=>v?`<span style="color:#ff4444;font-weight:700">✓</span>`:`<span style="color:#00cc66;font-weight:700">✗</span>`},
+  {key:'broke_ma10_after_ath',label:'上次新高后是否跌破过MA10',fmt:v=>v?`<span style="color:#ff4444;font-weight:700">✓</span>`:`<span style="color:#00cc66;font-weight:700">✗</span>`},
+  {key:'broke_ma20_after_ath',label:'上次新高后是否跌破过MA20',fmt:v=>v?`<span style="color:#ff4444;font-weight:700">✓</span>`:`<span style="color:#00cc66;font-weight:700">✗</span>`},
+  {key:'ma5_deviation',label:'当前MA5偏离%',fmt:v=>pct(v),sort:'num'},
+  {key:'gap_to_new_high',label:'继续创新高需涨',fmt:v=>`<span class="mono" style="color:#ff4444">+${fmt(v)}%</span>`,sort:'num'},
+  {key:'drop_to_break_ma5',label:'跌破MA5需跌',fmt:v=>`<span class="mono" style="color:#00cc66">${fmt(v)}%</span>`,sort:'num'},
+  {key:'ipo_price',label:'发行价',fmt:v=>`<span class="mono">${fmt(v)}</span>`,sort:'num'},
+  {key:'gain_from_low',label:'上市以来最大涨幅%',fmt:v=>`<span class="mono" style="color:#ff4444">${fmt(v,0)}%</span>`,sort:'num'},
+  {key:'gain_since_924',label:'牛市以来涨幅%',fmt:v=>pct(v),sort:'num'},
+  {key:'strength_score',label:'综合强度',fmt:v=>{const clr=v>65?C.cyan:v>45?'#ff4444':C.mag;return `<span class="mono" style="color:${clr};font-weight:700">${fmt(v,1)}</span>`},sort:'num'},
+];
+
+let sortCol=null,sortDir=1,filterBoard='all',searchTerm='';
+
+function renderTable(){
+  const head=document.getElementById('tableHead');
+  head.innerHTML=TABLE_COLS.map((col,i)=>`<th data-idx="${i}">${col.label}</th>`).join('');
+
+  head.querySelectorAll('th').forEach(th=>{
+    th.addEventListener('click',()=>{
+      const idx=+th.dataset.idx;
+      if(sortCol===idx){sortDir*=-1}else{sortCol=idx;sortDir=-1}
+      head.querySelectorAll('th').forEach(t=>t.className='');
+      th.className=sortDir>0?'sorted-asc':'sorted-desc';
+      fillTable();
+    });
+  });
+  // Default sort by strength
+  sortCol=TABLE_COLS.findIndex(c=>c.key==='strength_score');
+  sortDir=-1;
+  head.querySelector(`th[data-idx="${sortCol}"]`).className='sorted-desc';
+  fillTable();
+}
+
+function fillTable(){
+  let filtered=[...DATA];
+  if(filterBoard!=='all')filtered=filtered.filter(d=>d.board===filterBoard);
+  if(searchTerm){
+    const t=searchTerm.toLowerCase();
+    filtered=filtered.filter(d=>
+      d.code.includes(t)||d.name.toLowerCase().includes(t)||
+      d.industry.toLowerCase().includes(t)||d.concept.toLowerCase().includes(t)
+    );
+  }
+  if(sortCol!==null){
+    const key=TABLE_COLS[sortCol].key;
+    filtered.sort((a,b)=>{
+      let va=a[key],vb=b[key];
+      if(typeof va==='string')return sortDir*(va.localeCompare(vb));
+      return sortDir*((va||0)-(vb||0));
+    });
+  }
+  const body=document.getElementById('tableBody');
+  body.innerHTML=filtered.map(d=>
+    `<tr>${TABLE_COLS.map(col=>{
+      const v=d[col.key];
+      return `<td>${col.fmt?col.fmt(v):(v??'-')}</td>`;
+    }).join('')}</tr>`
+  ).join('');
+  document.getElementById('tableCount').textContent=`显示 ${filtered.length} / ${DATA.length} 条`;
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded',()=>{
+  renderKPI();
+  const charts=[renderTreemap(),renderBoardPie(),renderMcapDist(),renderConceptBar(),renderStrengthBar(),renderBubble(),renderGainCompare(),renderTurnoverScatter(),renderRadar(),renderRiskReward()].filter(Boolean);
+  renderTable();
+
+  // Search & filter
+  document.getElementById('searchInput').addEventListener('input',e=>{searchTerm=e.target.value;fillTable()});
+  document.querySelectorAll('.board-filter').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.board-filter').forEach(b=>b.style.opacity='.5');
+      btn.style.opacity='1';
+      filterBoard=btn.dataset.board;
+      fillTable();
+    });
+  });
+
+  // Resize
+  window.addEventListener('resize',()=>charts.forEach(c=>c&&c.resize()));
+
+  // Progress bar
+  const pb=document.getElementById('progressBar');
+  window.addEventListener('scroll',()=>{
+    const h=document.documentElement.scrollHeight-window.innerHeight;
+    const p=h>0?window.scrollY/h:0;
+    pb.style.transform=`scaleX(${p})`;
+  });
+
+  // GSAP ScrollTrigger animations
+  gsap.registerPlugin(ScrollTrigger);
+  gsap.utils.toArray('.section').forEach(el=>{
+    gsap.to(el,{opacity:1,y:0,duration:0.8,ease:'power2.out',scrollTrigger:{trigger:el,start:'top 85%',toggleActions:'play none none none'}});
+  });
+
+  // Hero parallax
+  gsap.to('#hero',{yPercent:20,ease:'none',scrollTrigger:{trigger:'#hero',start:'top top',end:'bottom top',scrub:true}});
+});
+</script>
+</body>
+</html>
